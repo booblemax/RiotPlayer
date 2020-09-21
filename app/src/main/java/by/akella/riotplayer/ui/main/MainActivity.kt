@@ -1,8 +1,8 @@
-package by.akella.riotplayer
+package by.akella.riotplayer.ui.main
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import by.akella.riotplayer.ui.main.MainFragment
+import by.akella.riotplayer.R
 
 class MainActivity : AppCompatActivity() {
 
