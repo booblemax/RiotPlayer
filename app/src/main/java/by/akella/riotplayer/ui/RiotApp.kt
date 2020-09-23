@@ -1,4 +1,4 @@
-package by.akella.riotplayer.ui.main
+package by.akella.riotplayer.ui
 
 import android.app.Application
 import com.google.android.exoplayer2.ui.BuildConfig
