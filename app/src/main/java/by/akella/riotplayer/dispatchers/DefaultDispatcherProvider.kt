@@ -1,9 +1,11 @@
-package com.example.domain.dispatchers
+package by.akella.riotplayer.dispatchers
 
+import com.example.domain.dispatchers.DispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
 
-class DefaultDispatcherProvider : DispatcherProvider {
+class DefaultDispatcherProvider @Inject constructor() : DispatcherProvider {
 
     override fun main(): CoroutineDispatcher = Dispatchers.Main
 

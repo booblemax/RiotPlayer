@@ -1,4 +1,4 @@
-package by.akella.riotplayer.ui.base
+package by.akella.riotplayer.util
 
 import timber.log.Timber
 
@@ -12,4 +12,8 @@ fun warn(text: String) {
 
 fun error(error: Throwable) {
     Timber.e(error)
+}
+
+fun error(text: String) {
+    Timber.e(text)
 }

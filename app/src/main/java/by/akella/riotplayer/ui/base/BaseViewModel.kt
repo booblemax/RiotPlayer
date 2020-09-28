@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import by.akella.riotplayer.util.error
 
 abstract class BaseViewModel(protected val dispatcherProvider: DispatcherProvider) : ViewModel() {
 
