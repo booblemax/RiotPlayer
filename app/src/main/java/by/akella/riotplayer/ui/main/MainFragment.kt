@@ -42,20 +42,7 @@ class MainFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         //init recycler
         adapter = MainAdapter { view.snack("${it.title} song clicked")}
         with(binding.localSongs) {
-            addItemDecoration(object : RecyclerView.ItemDecoration() {
-                override fun getItemOffsets(
-                    outRect: Rect,
-                    view: View,
-                    parent: RecyclerView,
-                    state: RecyclerView.State
-                ) {
-                    val currItemPosition = parent.getChildAdapterPosition(view)
-                    val lastPosition = parent.adapter?.itemCount ?: 0
-                    if (currItemPosition == lastPosition) {
-                        outRect.bottom = resources.getDimensionPixelOffset(R.dimen.size_8)
-                    }
-                }
-            })
+            addItemDecoration(BottomOffsetItemDecoration())
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
             adapter = this@MainFragment.adapter
