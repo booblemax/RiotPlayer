@@ -49,7 +49,7 @@ class SongsRepositoryImpl @Inject constructor(
 
             if (it.moveToFirst()) {
                 do {
-                    val id = it.getLong(idIndex)
+                    val id = it.getString(idIndex)
                     val title = it.getString(titleIndex)
                     val albumId = it.getLong(albumIdIndex)
                     val albumName = it.getStringOrNull(albumNameIndex)

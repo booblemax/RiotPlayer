@@ -2,6 +2,7 @@ package by.akella.riotplayer.util
 
 import android.app.Activity
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.view.View
 import android.view.WindowManager
@@ -80,10 +81,11 @@ fun Activity.makeStatusBarTransparent() {
     }
 }
 
-
 fun Activity.makeStatusBarVisible() {
     window.apply {
         decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         statusBarColor = ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, theme)
     }
 }
+
+fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY

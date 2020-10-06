@@ -33,6 +33,7 @@ class MainViewModel @ViewModelInject constructor(
     fun loadSongs() = orbit {
         transformSuspend {
             songsRepository.getSongs().map { SongUiModel(it.id, it.title, it.artist) }
+//            listOf<SongUiModel>()
         }.reduce {
             state.copy(loading = false, songs = event)
         }

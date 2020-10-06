@@ -1,8 +1,7 @@
 package by.akella.riotplayer.ui.main
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import by.akella.riotplayer.R
+import androidx.appcompat.app.AppCompatActivity
 import by.akella.riotplayer.databinding.MainActivityBinding
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -1,14 +1,13 @@
 package by.akella.riotplayer.ui.main
 
 import android.Manifest
-import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.MainFragmentBinding
 import by.akella.riotplayer.scanner.SingleMediaScanner
@@ -40,7 +39,11 @@ class MainFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         super.onViewCreated(view, savedInstanceState)
 
         //init recycler
-        adapter = MainAdapter { view.snack("${it.title} song clicked")}
+        adapter = MainAdapter {
+            findNavController().navigate(
+                MainFragmentDirections.actionMainFragmentToPlayerFragment(it.id)
+            )
+        }
         with(binding.localSongs) {
             addItemDecoration(BottomOffsetItemDecoration())
             layoutManager = LinearLayoutManager(requireContext())

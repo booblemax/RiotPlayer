@@ -2,15 +2,16 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'androidx.navigation.safeargs'
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "by.akella.riotplayer"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -72,6 +73,7 @@ dependencies {
 
     implementation 'com.google.android.exoplayer:exoplayer-core:2.12.0'
     implementation 'com.google.android.exoplayer:exoplayer-ui:2.12.0'
+    implementation "com.google.android.exoplayer:extension-mediasession:2.12.0"
 
     implementation "pub.devrel:easypermissions:3.0.0"
     implementation "com.jakewharton.timber:timber:4.7.1"
