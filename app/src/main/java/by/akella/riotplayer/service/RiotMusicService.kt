@@ -1,29 +1,40 @@
 package by.akella.riotplayer.service
 
 import android.app.PendingIntent
+import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
+import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.widget.Toast
 import androidx.media.MediaBrowserServiceCompat
+import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
 import by.akella.riotplayer.media.RiotMediaController
+import by.akella.riotplayer.repository.songs.SongsRepository
+import by.akella.riotplayer.util.*
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class RiotMusicService : MediaBrowserServiceCompat() {
+
+    @Inject
+    lateinit var songsRepository: SongsRepository
 
     private val serviceJob = SupervisorJob()
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private lateinit var mediaSession: MediaSessionCompat
-
     private lateinit var mediaConnector: MediaSessionConnector
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private val myAudioAttributes = AudioAttributes.Builder()
@@ -41,35 +52,43 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
     }
 
+    private val dataFactory: DefaultDataSourceFactory by lazy {
+        DefaultDataSourceFactory(
+            this,
+            USER_AGENT
+        )
+    }
+
     private var isForegroundService = false
 
     override fun onCreate() {
         super.onCreate()
+        info("RiotMusicService onCreate")
 
         val sessionActivityPendingIntent =
             packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
                 PendingIntent.getActivity(this, 0, sessionIntent, 0)
             }
 
-        mediaSession = MediaSessionCompat(baseContext, MY_MEDIA_ID).apply {
+        stateBuilder = PlaybackStateCompat.Builder()
+        mediaSession = MediaSessionCompat(
+            baseContext,
+            MY_MEDIA_ID,
+            ComponentName(baseContext, MediaButtonReceiver::class.java),
+            null
+        ).apply {
+            setSessionActivity(sessionActivityPendingIntent)
+
             setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                         or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
             )
 
-            stateBuilder = PlaybackStateCompat.Builder()
-                .setActions(
-                    PlaybackStateCompat.ACTION_PLAY or
-                            PlaybackStateCompat.ACTION_PLAY_PAUSE
-                )
-
-            setPlaybackState(stateBuilder.build())
+            setCallback(MediaSessionCallback())
             isActive = true
         }
 
         sessionToken = mediaSession.sessionToken
-
-        mediaConnector = MediaSessionConnector(mediaSession)
     }
 
     override fun onDestroy() {
@@ -91,17 +110,22 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-       return null
+        return BrowserRoot("/", null)
     }
 
     override fun onLoadChildren(
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-
+        result.sendResult(null)
     }
 
     private inner class PlayerEventListener : Player.EventListener {
+
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            super.onIsPlayingChanged(isPlaying)
+            info("IsPlaying changed on $isPlaying")
+        }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
@@ -117,8 +141,10 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
-                else -> {  /* hide notification */}
+                else -> {  /* hide notification */
+                }
             }
+            info("PLayer State changed on $playbackState")
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
@@ -156,8 +182,80 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
     }
 
+    private inner class MediaSessionCallback : MediaSessionCompat.Callback() {
+
+        override fun onPlay() {
+            super.onPlay()
+            info("MediaSessionCallback onPlay")
+
+            mediaSession.isActive = true
+
+            stateBuilder.setActions(
+                PlaybackStateCompat.ACTION_PLAY or
+                        PlaybackStateCompat.ACTION_PLAY_PAUSE
+            )
+
+            mediaSession.setPlaybackState(stateBuilder.build())
+            player.playWhenReady = true
+        }
+
+        override fun onPause() {
+            super.onPause()
+            info("MediaSessionCallback onPause")
+
+            if (player.isPlaying) {
+                player.pause()
+                stateBuilder.setActions(PlaybackStateCompat.ACTION_PAUSE)
+                mediaSession.setPlaybackState(stateBuilder.build())
+            }
+        }
+
+        override fun onSkipToNext() {
+            super.onSkipToNext()
+            info("MediaSessionCallback onSkipToNext")
+        }
+
+        override fun onSkipToPrevious() {
+            super.onSkipToPrevious()
+            info("MediaSessionCallback onSkipToPrevious")
+        }
+
+        override fun onStop() {
+            super.onStop()
+            info("MediaSessionCallback onStop")
+        }
+
+        override fun onSeekTo(pos: Long) {
+            super.onSeekTo(pos)
+            info("MediaSessionCallback onSeekTo to $pos")
+        }
+
+        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+            super.onPlayFromMediaId(mediaId, extras)
+            info("onPlayFromMediaId -> $mediaId")
+
+            mediaId?.let {
+                val song = songsRepository.getSong(mediaId)
+                val mediaMetadata = MediaMetadataCompat.Builder().apply {
+                    id = song.id
+                    title = song.title
+                    artist = song.artist
+                    album = song.album
+                    mediaUri = song.uri.toString()
+                }.build()
+
+                val mediaSource = mediaMetadata.toMediaSource(dataFactory)
+
+                player.setMediaSource(mediaSource)
+                player.prepare()
+                player.play()
+            }
+        }
+    }
+
     companion object {
         const val MY_MEDIA_ID = "media_id"
+        const val USER_AGENT = "riot.next"
         private const val TAG = "MusicPlayer"
     }
 }

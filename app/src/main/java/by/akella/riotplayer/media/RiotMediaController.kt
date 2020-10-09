@@ -2,26 +2,24 @@ package by.akella.riotplayer.media
 
 import android.content.ComponentName
 import android.content.Context
+import android.provider.MediaStore
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.widget.MediaController
 import androidx.lifecycle.MutableLiveData
-import dagger.hilt.android.qualifiers.ApplicationContext
+import by.akella.riotplayer.util.info
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class RiotMediaController @Inject constructor(
-    private val context: Context,
-    private val serviceComponent: ComponentName
+    context: Context,
+    serviceComponent: ComponentName
 ) {
 
     /**
      * LiveData indicates connection with [MediaBrowserCompat]
      */
-    val isConnected = MutableLiveData<Boolean>().apply{ postValue(false) }
+    val isConnected = MutableLiveData<Boolean>().apply { postValue(false) }
 
     val rootMediaId: String get() = mediaBrowser.root
 
@@ -35,13 +33,14 @@ class RiotMediaController @Inject constructor(
     val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls
 
-    private lateinit var mediaController: MediaControllerCompat
     private val mediaBrowser = MediaBrowserCompat(
         context,
         serviceComponent,
         MediaBrowserConnectionCallback(context),
         null
     ).apply { connect() }
+
+    private lateinit var mediaController: MediaControllerCompat
 
     fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
         mediaBrowser.subscribe(parentId, callback)
@@ -51,12 +50,32 @@ class RiotMediaController @Inject constructor(
         mediaBrowser.unsubscribe(parentId, callback)
     }
 
+    fun play(mediaId: String? = null) {
+        if (isConnected.value == true) {
+            mediaController.sendCommand("PLAY", null ,null)
+            if (mediaId != null) {
+                transportControls.playFromMediaId(mediaId, null)
+            } else {
+                transportControls.play()
+            }
+        }
+        info("Playback state ${playbackState.value}")
+    }
+
+    fun pause() {
+        if (isConnected.value == true) {
+            transportControls.pause()
+        }
+    }
+
     private inner class MediaBrowserConnectionCallback(
         private val context: Context
     ) : MediaBrowserCompat.ConnectionCallback() {
 
         override fun onConnected() {
+            info("MediaBrowser connected to MediaBrowserService")
             mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
+                info("Register MediaControllerCallback")
                 registerCallback(MediaControllerCallback())
             }
 
@@ -72,13 +91,15 @@ class RiotMediaController @Inject constructor(
         }
     }
 
-    private inner class MediaControllerCallback: MediaControllerCompat.Callback() {
+    private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
+            info("Playback State changed on $state")
             playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
+            info("Metadata State changed on $metadata")
             nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
         }
     }

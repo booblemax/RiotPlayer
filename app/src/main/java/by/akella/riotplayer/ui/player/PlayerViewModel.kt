@@ -2,6 +2,7 @@ package by.akella.riotplayer.ui.player
 
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.appcompat.app.AppCompatActivity
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.Observer
@@ -65,22 +66,21 @@ class PlayerViewModel @ViewModelInject constructor(
 
     fun play(songModelId: String) {
         val nowPlaying = riotMediaController.nowPlayingSong.value
-        val transportControls = riotMediaController.transportControls
 
         val isPrepared = riotMediaController.playbackState.value?.isPrepared ?: false
         if (isPrepared && songModelId != nowPlaying?.id) {
             riotMediaController.playbackState.value?.let { state ->
                 if (state.isPlayEnabled) {
-                    transportControls.play()
+                    riotMediaController.play()
                 }
             }
         } else {
-            transportControls.playFromMediaId(songModelId, null)
+            riotMediaController.play(songModelId)
         }
     }
 
     fun pause() {
-        riotMediaController.transportControls.pause()
+        riotMediaController.pause()
     }
 
     override fun onCleared() {

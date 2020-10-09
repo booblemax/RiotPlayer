@@ -22,7 +22,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.RiotMusicService">
+        <service
+            android:name=".service.RiotMusicService"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
