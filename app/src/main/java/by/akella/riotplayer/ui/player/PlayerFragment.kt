@@ -26,6 +26,8 @@ class PlayerFragment : BaseFragment() {
     ): View? {
         binding = PlayerFragmentBinding.inflate(inflater, container, false)
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
+        viewModel.currentMediaId = args.mediaId
+
         return binding.root
     }
 
@@ -43,8 +45,6 @@ class PlayerFragment : BaseFragment() {
             }
         }
 
-        viewModel.runDelayed {
-            viewModel.play(args.mediaId)
-        }
+        viewModel.play()
     }
 }

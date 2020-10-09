@@ -88,6 +88,14 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             isActive = true
         }
 
+        stateBuilder.setActions(
+            PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                    PlaybackStateCompat.ACTION_SEEK_TO or
+                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        )
+
         sessionToken = mediaSession.sessionToken
     }
 
@@ -122,11 +130,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
     private inner class PlayerEventListener : Player.EventListener {
 
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            super.onIsPlayingChanged(isPlaying)
-            info("IsPlaying changed on $isPlaying")
-        }
-
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 Player.STATE_BUFFERING,
@@ -137,14 +140,13 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
                         if (!playWhenReady) {
 
-                            stopForeground(false)
+//                            stopForeground(false)
                         }
                     }
                 }
                 else -> {  /* hide notification */
                 }
             }
-            info("PLayer State changed on $playbackState")
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
@@ -189,12 +191,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             info("MediaSessionCallback onPlay")
 
             mediaSession.isActive = true
-
-            stateBuilder.setActions(
-                PlaybackStateCompat.ACTION_PLAY or
-                        PlaybackStateCompat.ACTION_PLAY_PAUSE
-            )
-
+            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
             mediaSession.setPlaybackState(stateBuilder.build())
             player.playWhenReady = true
         }
@@ -205,7 +202,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
             if (player.isPlaying) {
                 player.pause()
-                stateBuilder.setActions(PlaybackStateCompat.ACTION_PAUSE)
+                stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, 0, 1f)
                 mediaSession.setPlaybackState(stateBuilder.build())
             }
         }
@@ -246,10 +243,15 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
                 val mediaSource = mediaMetadata.toMediaSource(dataFactory)
 
+                stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
+                mediaSession.setPlaybackState(stateBuilder.build())
+                mediaSession.setMetadata(mediaMetadata)
+
                 player.setMediaSource(mediaSource)
                 player.prepare()
                 player.play()
             }
+
         }
     }
 

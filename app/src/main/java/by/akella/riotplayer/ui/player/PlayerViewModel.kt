@@ -30,6 +30,8 @@ class PlayerViewModel @ViewModelInject constructor(
 
     override val container: Container<PlayerState, Nothing> = container(PlayerState())
 
+    lateinit var currentMediaId: String
+
     init {
         with(riotMediaController) {
             nowPlayingSongObserver = Observer { media ->
@@ -60,22 +62,22 @@ class PlayerViewModel @ViewModelInject constructor(
     fun onPlayPauseClicked() {
         riotMediaController.playbackState.value?.let {
             if (it.isPlaying) pause()
-            else play(riotMediaController.rootMediaId)
+            else play()
         }
     }
 
-    fun play(songModelId: String) {
+    fun play() {
         val nowPlaying = riotMediaController.nowPlayingSong.value
 
         val isPrepared = riotMediaController.playbackState.value?.isPrepared ?: false
-        if (isPrepared && songModelId != nowPlaying?.id) {
+        if (isPrepared && currentMediaId != nowPlaying?.id) {
             riotMediaController.playbackState.value?.let { state ->
                 if (state.isPlayEnabled) {
                     riotMediaController.play()
                 }
             }
         } else {
-            riotMediaController.play(songModelId)
+            riotMediaController.play(currentMediaId)
         }
     }
 
