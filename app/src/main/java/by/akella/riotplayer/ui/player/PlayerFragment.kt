@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.util.warn
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,6 +27,8 @@ class PlayerFragment : BaseFragment() {
     ): View? {
         binding = PlayerFragmentBinding.inflate(inflater, container, false)
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
+        binding.next.setOnClickListener { viewModel.next() }
+        binding.prev.setOnClickListener { viewModel.prev() }
         viewModel.currentMediaId = args.mediaId
 
         return binding.root
@@ -33,6 +36,7 @@ class PlayerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
+            warn("$state")
             with(state) {
                 song?.let {
                     binding.songName.text = it.title

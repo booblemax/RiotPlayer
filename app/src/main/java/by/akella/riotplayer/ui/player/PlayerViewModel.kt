@@ -37,6 +37,7 @@ class PlayerViewModel @ViewModelInject constructor(
             nowPlayingSongObserver = Observer { media ->
                 orbit {
                     transform {
+                        warn("nowPlaying transform")
                         SongUiModel(
                             media.id ?: "",
                             media.title ?: "",
@@ -51,6 +52,7 @@ class PlayerViewModel @ViewModelInject constructor(
             playbackStateObserver = Observer { state ->
                 orbit {
                     transform {
+                        warn("Playback transform")
                         state.isPlaying
                     }.reduce { PlayerState(isPlaying = event) }
                 }
@@ -83,6 +85,14 @@ class PlayerViewModel @ViewModelInject constructor(
 
     fun pause() {
         riotMediaController.pause()
+    }
+
+    fun next() {
+        riotMediaController.next()
+    }
+
+    fun prev() {
+        riotMediaController.prev()
     }
 
     override fun onCleared() {

@@ -9,6 +9,8 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
 import by.akella.riotplayer.util.info
+import by.akella.riotplayer.util.print
+import by.akella.riotplayer.util.stateName
 import javax.inject.Inject
 
 class RiotMediaController @Inject constructor(
@@ -28,7 +30,7 @@ class RiotMediaController @Inject constructor(
         postValue(NOTHING_TO_PLAY)
     }
 
-    val transportControls: MediaControllerCompat.TransportControls
+    private val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls
 
     private val mediaBrowser = MediaBrowserCompat(
@@ -65,9 +67,17 @@ class RiotMediaController @Inject constructor(
         }
     }
 
-    fun getNowPlaying() = mediaController.metadata
+    fun next() {
+        if (isConnected.value == true) {
+            transportControls.skipToNext()
+        }
+    }
 
-    fun getPlaybackState() = mediaController.playbackState
+    fun prev() {
+        if (isConnected.value == true) {
+            transportControls.skipToPrevious()
+        }
+    }
 
     private inner class MediaBrowserConnectionCallback(
         private val context: Context
@@ -94,12 +104,12 @@ class RiotMediaController @Inject constructor(
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            info("${this::class.java.simpleName} Playback State changed on $state")
+            info("${this::class.java.simpleName} Playback State changed on ${state?.stateName}")
             playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            info("${this::class.java.simpleName} Metadata State changed on $metadata")
+            info("${this::class.java.simpleName} Metadata State changed on ${metadata?.print()}")
             nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
         }
     }

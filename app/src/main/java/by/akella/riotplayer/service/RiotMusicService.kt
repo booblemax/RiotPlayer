@@ -14,7 +14,9 @@ import android.widget.Toast
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
+import by.akella.riotplayer.media.QueueManager
 import by.akella.riotplayer.media.RiotMediaController
+import by.akella.riotplayer.repository.songs.SongModel
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.util.*
 import com.google.android.exoplayer2.*
@@ -32,11 +34,12 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     lateinit var songsRepository: SongsRepository
 
     private val serviceJob = SupervisorJob()
-
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
+
     private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var mediaConnector: MediaSessionConnector
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
+    private val queueManager = QueueManager()
+
     private val myAudioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
@@ -58,8 +61,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             USER_AGENT
         )
     }
-
-    private var isForegroundService = false
 
     override fun onCreate() {
         super.onCreate()
@@ -194,37 +195,42 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
             mediaSession.setPlaybackState(stateBuilder.build())
             player.playWhenReady = true
+            player.play()
         }
 
         override fun onPause() {
             super.onPause()
             info("MediaSessionCallback onPause")
-
-            if (player.isPlaying) {
-                player.pause()
-                stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, 0, 1f)
-                mediaSession.setPlaybackState(stateBuilder.build())
-            }
+            pause()
         }
 
         override fun onSkipToNext() {
             super.onSkipToNext()
             info("MediaSessionCallback onSkipToNext")
+            pause()
+            queueManager.skipPositions(1)
+            playSong(queueManager.getCurrentSong())
         }
 
         override fun onSkipToPrevious() {
             super.onSkipToPrevious()
             info("MediaSessionCallback onSkipToPrevious")
+            pause()
+            queueManager.skipPositions(-1)
+            playSong(queueManager.getCurrentSong())
         }
 
         override fun onStop() {
             super.onStop()
             info("MediaSessionCallback onStop")
+            stop()
         }
 
         override fun onSeekTo(pos: Long) {
             super.onSeekTo(pos)
             info("MediaSessionCallback onSeekTo to $pos")
+
+            player.seekTo(pos)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
@@ -232,26 +238,50 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             info("onPlayFromMediaId -> $mediaId")
 
             mediaId?.let {
-                val song = songsRepository.getSong(mediaId)
-                val mediaMetadata = MediaMetadataCompat.Builder().apply {
-                    id = song.id
-                    title = song.title
-                    artist = song.artist
-                    album = song.album
-                    mediaUri = song.uri.toString()
-                }.build()
-
-                val mediaSource = mediaMetadata.toMediaSource(dataFactory)
-
-                stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
-                mediaSession.setPlaybackState(stateBuilder.build())
-                mediaSession.setMetadata(mediaMetadata)
-
-                player.setMediaSource(mediaSource)
-                player.prepare()
-                player.play()
+                val mediaMetadata = songsRepository.getSong(mediaId).toMediaMetadata()
+                prepareQueue(mediaMetadata.id ?: "")
+                playSong(mediaMetadata)
             }
+        }
+    }
 
+    private fun playSong(media: MediaMetadataCompat) {
+        pause()
+
+        stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
+        mediaSession.setPlaybackState(stateBuilder.build())
+        mediaSession.setMetadata(media)
+
+        val mediaSource = media.toMediaSource(dataFactory)
+        player.setMediaSource(mediaSource)
+        player.prepare()
+        player.play()
+    }
+
+    private fun pause() {
+        if (player.isPlaying) {
+            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, 0, 1f)
+            mediaSession.setPlaybackState(stateBuilder.build())
+            player.pause()
+        }
+    }
+
+    private fun stop() {
+        if (player.isPlaying) {
+            pause()
+        }
+
+        stateBuilder.setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
+        mediaSession.setPlaybackState(stateBuilder.build())
+        player.stop(true)
+    }
+
+    private fun prepareQueue(currMediaId: String = "") {
+        if (queueManager.getQueueSize() != 0) return
+
+        serviceScope.launch {
+            val songs = songsRepository.getSongs()
+            queueManager.setQueue(songs.toMediaMetadata(), currMediaId)
         }
     }
 

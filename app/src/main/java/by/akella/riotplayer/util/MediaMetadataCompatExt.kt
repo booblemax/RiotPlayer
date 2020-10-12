@@ -21,6 +21,7 @@ import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import by.akella.riotplayer.repository.songs.SongModel
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
@@ -274,6 +275,33 @@ fun List<MediaMetadataCompat>.toMediaSource(
     }
     return concatenatingMediaSource
 }
+
+
+fun SongModel.toMediaMetadata(): MediaMetadataCompat{
+    val builder = MediaMetadataCompat.Builder()
+    return builder.apply {
+            id = this@toMediaMetadata.id
+            title = this@toMediaMetadata.title
+            artist = this@toMediaMetadata.artist
+            album = this@toMediaMetadata.album
+            mediaUri = this@toMediaMetadata.uri.toString()
+        }.build()
+}
+
+fun List<SongModel>.toMediaMetadata(): List<MediaMetadataCompat> {
+    val builder = MediaMetadataCompat.Builder()
+    return map { song ->
+        builder.apply {
+            id = song.id
+            title = song.title
+            artist = song.artist
+            album = song.album
+            mediaUri = song.uri.toString()
+        }.build()
+    }
+}
+
+fun MediaMetadataCompat.print() = "MediaMetadata ($id, $title, $album, $artist)"
 
 /**
  * Custom property that holds whether an item is [MediaItem.FLAG_BROWSABLE] or

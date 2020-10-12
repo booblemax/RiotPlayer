@@ -2,6 +2,7 @@ package by.akella.riotplayer.di
 
 import android.content.ComponentName
 import android.content.Context
+import by.akella.riotplayer.media.QueueManager
 import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.repository.songs.SongsRepositoryImpl
@@ -31,4 +32,8 @@ class CommonModule {
     fun provideSongsRepository(@ApplicationContext context: Context): SongsRepository {
         return SongsRepositoryImpl(context)
     }
+
+    @Singleton
+    @Provides
+    fun provideQueueManager() = QueueManager()
 }
