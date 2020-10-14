@@ -7,19 +7,17 @@
     android:layout_height="wrap_content"
     android:background="@color/colorPrimary">
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/song_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="@dimen/size_24"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_item_song"
-        android:padding="@dimen/size_16"
+        app:shapeAppearanceOverlay="@style/albumImage"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_musical_note" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/name"

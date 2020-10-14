@@ -5,8 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.ItemSongBinding
 import by.akella.riotplayer.ui.base.model.SongUiModel
+import by.akella.riotplayer.util.loadAlbumIcon
+import com.bumptech.glide.Glide
 
 class MainAdapter(
     private val onItemClickListener: (SongUiModel) -> Unit
@@ -38,6 +41,7 @@ class MainViewHolder(private val binding: ItemSongBinding) : RecyclerView.ViewHo
         with(binding) {
             name.text = song.title
             artist.text = song.artist
+            songIcon.loadAlbumIcon(song.albumArtPath, R.drawable.ic_musical_note)
         }
     }
 }

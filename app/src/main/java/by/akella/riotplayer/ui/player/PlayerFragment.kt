@@ -4,13 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.util.loadAlbumIcon
 import by.akella.riotplayer.util.warn
 import com.babylon.orbit2.livedata.state
+import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -41,6 +43,12 @@ class PlayerFragment : BaseFragment() {
                 song?.let {
                     binding.songName.text = it.title
                     binding.songArtist.text = it.artist
+                    if (binding.albumImage.drawable == null) {
+                        binding.albumImage.loadAlbumIcon(
+                            it.albumArtPath,
+                            R.drawable.ic_musical_note
+                        )
+                    }
                 }
                 binding.playPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause

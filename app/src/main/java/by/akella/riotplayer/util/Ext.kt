@@ -6,13 +6,16 @@ import android.net.Uri
 import android.os.Build
 import android.view.View
 import android.view.WindowManager
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import by.akella.riotplayer.R
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 
 fun Activity.setupToolbar(toolbar: Toolbar) {
@@ -89,3 +92,11 @@ fun Activity.makeStatusBarVisible() {
 }
 
 fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY
+
+fun AppCompatImageView.loadAlbumIcon(albumIconPath: String, @DrawableRes default: Int) {
+    Glide.with(this)
+        .asBitmap()
+        .load(albumIconPath)
+        .error(default)
+        .into(this)
+}

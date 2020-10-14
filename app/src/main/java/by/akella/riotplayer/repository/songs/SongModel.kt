@@ -2,7 +2,6 @@ package by.akella.riotplayer.repository.songs
 
 import android.net.Uri
 import android.os.Parcelable
-import android.support.v4.media.MediaMetadataCompat
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
@@ -13,5 +12,6 @@ data class SongModel(
     val artist: String,
     val albumId: Long,
     val album: String,
+    val albumArt: String,
     val uri: Uri
 ) : Parcelable

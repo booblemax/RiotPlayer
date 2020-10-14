@@ -17,4 +17,9 @@
         <item name="android:textColor">@color/pink_light</item>
     </style>
 
+    <style name="albumImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerRadius">20dp</item>
+    </style>
+
 </resources>

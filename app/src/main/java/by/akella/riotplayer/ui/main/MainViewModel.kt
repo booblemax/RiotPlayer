@@ -8,6 +8,7 @@ import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.main.state.MainSideEffect
 import by.akella.riotplayer.ui.main.state.MainState
+import by.akella.riotplayer.util.toMediaMetadata
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.coroutines.transformSuspend
@@ -32,7 +33,7 @@ class MainViewModel @ViewModelInject constructor(
 
     fun loadSongs() = orbit {
         transformSuspend {
-            songsRepository.getSongs().map { SongUiModel(it.id, it.title, it.artist) }
+            songsRepository.getSongs().map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
 //            listOf<SongUiModel>()
         }.reduce {
             state.copy(loading = false, songs = event)

@@ -41,20 +41,24 @@ class PlayerViewModel @ViewModelInject constructor(
                         SongUiModel(
                             media.id ?: "",
                             media.title ?: "",
-                            media.artist ?: "")
+                            media.artist ?: "",
+                            media.mediaUri.toString()
+                        )
                     }.reduce {
-                        PlayerState(song = event)
+                        state.copy(song = event)
                     }
                 }
             }
             nowPlayingSong.observeForever(nowPlayingSongObserver)
 
-            playbackStateObserver = Observer { state ->
+            playbackStateObserver = Observer { playbackState ->
                 orbit {
                     transform {
                         warn("Playback transform")
-                        state.isPlaying
-                    }.reduce { PlayerState(isPlaying = event) }
+                        playbackState.isPlaying
+                    }.reduce {
+                        state.copy(isPlaying = event)
+                    }
                 }
             }
             playbackState.observeForever(playbackStateObserver)
