@@ -1,4 +1,4 @@
-package com.example.domain.dispatchers
+package by.akella.riotplayer.dispatchers
 
 import kotlinx.coroutines.CoroutineDispatcher
 

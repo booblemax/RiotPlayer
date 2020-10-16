@@ -14,7 +14,7 @@ import com.babylon.orbit2.coroutines.transformSuspend
 import com.babylon.orbit2.reduce
 import com.babylon.orbit2.sideEffect
 import com.babylon.orbit2.viewmodel.container
-import com.example.domain.dispatchers.DispatcherProvider
+import by.akella.riotplayer.dispatchers.DispatcherProvider
 
 class MainViewModel @ViewModelInject constructor(
     dispatchersProvider: DispatcherProvider,

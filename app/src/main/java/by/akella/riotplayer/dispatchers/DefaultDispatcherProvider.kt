@@ -1,6 +1,5 @@
 package by.akella.riotplayer.dispatchers
 
-import com.example.domain.dispatchers.DispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject

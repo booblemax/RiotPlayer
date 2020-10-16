@@ -1,45 +1,54 @@
- package by.akella.riotplayer.service
+package by.akella.riotplayer.service
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
 import by.akella.riotplayer.media.QueueManager
+import by.akella.riotplayer.notification.RiotNotificationManager
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.toMediaMetadata
 import by.akella.riotplayer.util.toMediaSource
+import by.akella.riotplayer.dispatchers.DispatcherProvider
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
- @AndroidEntryPoint
+@AndroidEntryPoint
 class RiotMusicService : MediaBrowserServiceCompat() {
 
     @Inject
     lateinit var songsRepository: SongsRepository
 
-    private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
+    @Inject
+    lateinit var dispatcherProvider: DispatcherProvider
 
+    private val serviceJob = SupervisorJob()
+    private lateinit var serviceScope: CoroutineScope
+
+    private lateinit var notificationManager: RiotNotificationManager
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private val queueManager = QueueManager()
@@ -53,7 +62,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
     private val player: ExoPlayer by lazy {
         SimpleExoPlayer.Builder(this).build().apply {
-            audioAttributes = myAudioAttributes
+            setAudioAttributes(myAudioAttributes, true)
             setHandleAudioBecomingNoisy(true)
             addListener(playerListener)
         }
@@ -66,9 +75,13 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         )
     }
 
+    private var isForegroundService = false
+
     override fun onCreate() {
         super.onCreate()
         info("RiotMusicService onCreate")
+
+        serviceScope = CoroutineScope(dispatcherProvider.main() + serviceJob)
 
         val sessionActivityPendingIntent =
             packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
@@ -77,9 +90,9 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
         stateBuilder = PlaybackStateCompat.Builder()
         mediaSession = MediaSessionCompat(
-            baseContext,
+            this,
             MY_MEDIA_ID,
-            ComponentName(baseContext, MediaButtonReceiver::class.java),
+            ComponentName(this, MediaButtonReceiver::class.java),
             null
         ).apply {
             setSessionActivity(sessionActivityPendingIntent)
@@ -102,6 +115,15 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         )
 
         sessionToken = mediaSession.sessionToken
+
+        notificationManager = RiotNotificationManager(
+            this,
+            dispatcherProvider,
+            mediaSession.sessionToken,
+            PlayerNotificationListener()
+        )
+
+        notificationManager.showNotification(player)
     }
 
     override fun onDestroy() {
@@ -133,22 +155,78 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         result.sendResult(null)
     }
 
+    private fun playSong(media: MediaMetadataCompat? = null) {
+        applyPlayState()
+
+        media?.let {
+            mediaSession.setMetadata(it)
+            val mediaSource = it.toMediaSource(dataFactory)
+            player.setMediaSource(mediaSource)
+            player.prepare()
+        }
+
+        player.playWhenReady = true
+    }
+
+    private fun pause() {
+        if (player.isPlaying) {
+            applyPauseState()
+            player.pause()
+        }
+    }
+
+    private fun stop() {
+        if (player.isPlaying) {
+            pause()
+        }
+
+        applyStopState()
+        player.stop(true)
+    }
+
+    private fun applyPlayState() {
+        stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, player.currentPosition, 1f)
+        mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+    private fun applyPauseState() {
+        stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, player.currentPosition, 1f)
+        mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+    private fun applyStopState() {
+        stateBuilder.setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
+        mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+    private fun prepareQueue(currMediaId: String = "") {
+        if (queueManager.getQueueSize() != 0) return
+
+        serviceScope.launch {
+            val songs = songsRepository.getSongs()
+            queueManager.setQueue(songs.toMediaMetadata(), currMediaId)
+        }
+    }
+
     private inner class PlayerEventListener : Player.EventListener {
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
-                    // show notification
+                    notificationManager.showNotification(player)
                     if (playbackState == Player.STATE_READY) {
-                        // store recent played song into preferences
+                        // todo store recent played song into preferences
 
-                        if (!playWhenReady) {
-//                            stopForeground(false)
+                        if (playWhenReady) {
+                            applyPlayState()
+                        } else {
+                            applyPauseState()
+                            stopForeground(false)
                         }
                     }
                 }
-                else -> { /* hide notification */ }
+                else -> notificationManager.hideNotification()
             }
         }
 
@@ -192,48 +270,38 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     private inner class MediaSessionCallback : MediaSessionCompat.Callback() {
 
         override fun onPlay() {
-            super.onPlay()
             info("MediaSessionCallback onPlay")
-            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, player.currentPosition, 1f)
-            mediaSession.setPlaybackState(stateBuilder.build())
-            player.play()
+            playSong()
         }
 
         override fun onPause() {
-            super.onPause()
             info("MediaSessionCallback onPause")
             pause()
         }
 
         override fun onSkipToNext() {
-            super.onSkipToNext()
             info("MediaSessionCallback onSkipToNext")
             queueManager.skipPositions(1)
             playSong(queueManager.getCurrentSong())
         }
 
         override fun onSkipToPrevious() {
-            super.onSkipToPrevious()
             info("MediaSessionCallback onSkipToPrevious")
             queueManager.skipPositions(-1)
             playSong(queueManager.getCurrentSong())
         }
 
         override fun onStop() {
-            super.onStop()
             info("MediaSessionCallback onStop")
             stop()
         }
 
         override fun onSeekTo(pos: Long) {
-            super.onSeekTo(pos)
             info("MediaSessionCallback onSeekTo to $pos")
-
             player.seekTo(pos)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            super.onPlayFromMediaId(mediaId, extras)
             info("onPlayFromMediaId -> $mediaId")
 
             mediaId?.let {
@@ -244,41 +312,28 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
     }
 
-    private fun playSong(media: MediaMetadataCompat) {
-        stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
-        mediaSession.setPlaybackState(stateBuilder.build())
-        mediaSession.setMetadata(media)
+    private inner class PlayerNotificationListener : PlayerNotificationManager.NotificationListener {
 
-        val mediaSource = media.toMediaSource(dataFactory)
-        player.setMediaSource(mediaSource)
-        player.prepare()
-        player.play()
-    }
+        override fun onNotificationPosted(
+            notificationId: Int,
+            notification: Notification,
+            ongoing: Boolean
+        ) {
+            if (ongoing && !isForegroundService) {
+                ContextCompat.startForegroundService(
+                    applicationContext,
+                    Intent(applicationContext, this@RiotMusicService.javaClass)
+                )
 
-    private fun pause() {
-        if (player.isPlaying) {
-            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, player.currentPosition, 1f)
-            mediaSession.setPlaybackState(stateBuilder.build())
-            player.pause()
-        }
-    }
-
-    private fun stop() {
-        if (player.isPlaying) {
-            pause()
+                startForeground(notificationId, notification)
+                isForegroundService = true
+            }
         }
 
-        stateBuilder.setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
-        mediaSession.setPlaybackState(stateBuilder.build())
-        player.stop(true)
-    }
-
-    private fun prepareQueue(currMediaId: String = "") {
-        if (queueManager.getQueueSize() != 0) return
-
-        serviceScope.launch {
-            val songs = songsRepository.getSongs()
-            queueManager.setQueue(songs.toMediaMetadata(), currMediaId)
+        override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+            stopForeground(true)
+            isForegroundService = false
+            stopSelf()
         }
     }
 

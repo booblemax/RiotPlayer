@@ -2,11 +2,16 @@ package by.akella.riotplayer.ui.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.dispatchers.DispatcherProvider
+import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.util.error
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-abstract class BaseViewModel(protected val dispatcherProvider: DispatcherProvider) : ViewModel() {
+abstract class BaseViewModel(dispatcherProvider: DispatcherProvider) : ViewModel() {
 
     private val job = Job()
     private val exceptionHandler =

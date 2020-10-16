@@ -18,14 +18,13 @@ package by.akella.riotplayer.util
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import by.akella.riotplayer.repository.songs.SongModel
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
-
+import com.google.android.exoplayer2.MediaItem
 /**
  * Useful extensions for [MediaMetadataCompat].
  */
@@ -259,7 +258,7 @@ inline var MediaMetadataCompat.Builder.flag: Int
  * For convenience, place the [MediaDescriptionCompat] into the tag so it can be retrieved later.
  */
 fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory) =
-    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaUri)
+    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mediaUri))
 
 /**
  * Extension method for building a [ConcatenatingMediaSource] given a [List]
@@ -275,7 +274,6 @@ fun List<MediaMetadataCompat>.toMediaSource(
     }
     return concatenatingMediaSource
 }
-
 
 fun SongModel.toMediaMetadata(): MediaMetadataCompat{
     val builder = MediaMetadataCompat.Builder()
@@ -310,4 +308,3 @@ fun MediaMetadataCompat.print() = "MediaMetadata ($id, $title, $album, $artist)"
  * [MediaItem.FLAG_PLAYABLE].
  */
 const val METADATA_KEY_UAMP_FLAGS = "com.example.android.uamp.media.METADATA_KEY_UAMP_FLAGS"
-

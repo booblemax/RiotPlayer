@@ -25,7 +25,7 @@ import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.reduce
 import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
-import com.example.domain.dispatchers.DispatcherProvider
+import by.akella.riotplayer.dispatchers.DispatcherProvider
 
 class PlayerViewModel @ViewModelInject constructor(
     dispatcherProvider: DispatcherProvider,

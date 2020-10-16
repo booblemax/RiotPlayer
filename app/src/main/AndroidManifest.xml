@@ -3,7 +3,7 @@
     package="by.akella.riotplayer">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -24,7 +24,8 @@
 
         <service
             android:name=".service.RiotMusicService"
-            android:enabled="true">
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
