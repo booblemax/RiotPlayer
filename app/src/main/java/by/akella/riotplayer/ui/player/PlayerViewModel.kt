@@ -11,7 +11,15 @@ import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.player.state.PlayerState
-import by.akella.riotplayer.util.*
+import by.akella.riotplayer.util.id
+import by.akella.riotplayer.util.title
+import by.akella.riotplayer.util.artist
+import by.akella.riotplayer.util.albumArtUri
+import by.akella.riotplayer.util.duration
+import by.akella.riotplayer.util.isPlaying
+import by.akella.riotplayer.util.isPrepared
+import by.akella.riotplayer.util.isPlayEnabled
+import by.akella.riotplayer.util.currentPlayBackPosition
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.reduce
@@ -79,15 +87,15 @@ class PlayerViewModel @ViewModelInject constructor(
     fun onPlayPauseClicked() {
         riotMediaController.playbackState.value?.let {
             if (it.isPlaying) pause()
-            else play()
+            else play(container.currentState.song?.id ?: "")
         }
     }
 
-    fun play(mediaId: String = "") {
+    fun play(mediaId: String) {
         val nowPlaying = riotMediaController.nowPlayingSong.value
 
         val isPrepared = riotMediaController.playbackState.value?.isPrepared ?: false
-        if (isPrepared && mediaId != nowPlaying?.id) {
+        if (isPrepared && mediaId == nowPlaying?.id) {
             riotMediaController.playbackState.value?.let { state ->
                 if (state.isPlayEnabled) {
                     riotMediaController.play()
@@ -113,7 +121,8 @@ class PlayerViewModel @ViewModelInject constructor(
     private fun checkDuration(): Boolean = handler.postDelayed(
         {
             val playPosition = playbackState.currentPlayBackPosition
-            if (playPosition != container.currentState.currentPlayPosition) {
+            if (playPosition != container.currentState.currentPlayPosition &&
+                playbackState.isPlaying) {
                 orbit {
                     transform { playPosition }.reduce { state.copy(currentPlayPosition = playPosition) }
                 }

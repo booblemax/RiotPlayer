@@ -7,7 +7,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import android.widget.Toast
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
@@ -18,7 +17,11 @@ import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.toMediaMetadata
 import by.akella.riotplayer.util.toMediaSource
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import dagger.hilt.android.AndroidEntryPoint
@@ -136,46 +139,46 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
-                    //show notification
+                    // show notification
                     if (playbackState == Player.STATE_READY) {
-                        //store recent played song into preferences
+                        // store recent played song into preferences
 
                         if (!playWhenReady) {
-
 //                            stopForeground(false)
                         }
                     }
                 }
-                else -> {  /* hide notification */
-                }
+                else -> { /* hide notification */ }
             }
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
-            var message = R.string.generic_error;
+            val message = R.string.generic_error
             when (error.type) {
                 // If the data from MediaSource object could not be loaded the Exoplayer raises
                 // a type_source error.
                 // An error message is printed to UI via Toast message to inform the user.
                 ExoPlaybackException.TYPE_SOURCE -> {
-                    message = R.string.error_media_not_found;
-                    Log.e(TAG, "TYPE_SOURCE: " + error.sourceException.message)
+                    error("TYPE_SOURCE: ${error.sourceException.message}")
                 }
                 // If the error occurs in a render component, Exoplayer raises a type_remote error.
                 ExoPlaybackException.TYPE_RENDERER -> {
-                    Log.e(TAG, "TYPE_RENDERER: " + error.rendererException.message)
+                    error("TYPE_RENDERER: ${error.rendererException.message}")
                 }
                 // If occurs an unexpected RuntimeException Exoplayer raises a type_unexpected error.
                 ExoPlaybackException.TYPE_UNEXPECTED -> {
-                    Log.e(TAG, "TYPE_UNEXPECTED: " + error.unexpectedException.message)
+                    error("TYPE_UNEXPECTED: ${error.unexpectedException.message}")
                 }
                 // Occurs when there is a OutOfMemory error.
                 ExoPlaybackException.TYPE_OUT_OF_MEMORY -> {
-                    Log.e(TAG, "TYPE_OUT_OF_MEMORY: " + error.outOfMemoryError.message)
+                    error("TYPE_OUT_OF_MEMORY: ${error.outOfMemoryError.message}")
                 }
                 // If the error occurs in a remote component, Exoplayer raises a type_remote error.
                 ExoPlaybackException.TYPE_REMOTE -> {
-                    Log.e(TAG, "TYPE_REMOTE: " + error.message)
+                    error("TYPE_REMOTE: ${error.message}")
+                }
+                ExoPlaybackException.TYPE_TIMEOUT -> {
+                    error("TYPE_TIMEOUT: ${error.message}")
                 }
             }
             Toast.makeText(
@@ -191,11 +194,8 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         override fun onPlay() {
             super.onPlay()
             info("MediaSessionCallback onPlay")
-
-            mediaSession.isActive = true
-            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
+            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, player.currentPosition, 1f)
             mediaSession.setPlaybackState(stateBuilder.build())
-            player.playWhenReady = true
             player.play()
         }
 
@@ -208,7 +208,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         override fun onSkipToNext() {
             super.onSkipToNext()
             info("MediaSessionCallback onSkipToNext")
-            pause()
             queueManager.skipPositions(1)
             playSong(queueManager.getCurrentSong())
         }
@@ -216,7 +215,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         override fun onSkipToPrevious() {
             super.onSkipToPrevious()
             info("MediaSessionCallback onSkipToPrevious")
-            pause()
             queueManager.skipPositions(-1)
             playSong(queueManager.getCurrentSong())
         }
@@ -247,8 +245,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     }
 
     private fun playSong(media: MediaMetadataCompat) {
-        pause()
-
         stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0, 1f)
         mediaSession.setPlaybackState(stateBuilder.build())
         mediaSession.setMetadata(media)
@@ -261,7 +257,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
     private fun pause() {
         if (player.isPlaying) {
-            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, 0, 1f)
+            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, player.currentPosition, 1f)
             mediaSession.setPlaybackState(stateBuilder.build())
             player.pause()
         }

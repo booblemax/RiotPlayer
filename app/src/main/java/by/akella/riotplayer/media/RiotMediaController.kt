@@ -9,7 +9,6 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.print
-import by.akella.riotplayer.util.stateName
 import javax.inject.Inject
 
 class RiotMediaController @Inject constructor(
@@ -57,7 +56,6 @@ class RiotMediaController @Inject constructor(
                 transportControls.play()
             }
         }
-        info("Playback state ${playbackState.value}")
     }
 
     fun pause() {
@@ -103,7 +101,7 @@ class RiotMediaController @Inject constructor(
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            info("${this::class.java.simpleName} Playback State changed on ${state?.stateName}")
+            info("${this::class.java.simpleName} Playback State changed on $state")
             playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
         }
 
