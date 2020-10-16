@@ -22,6 +22,7 @@ import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.toMediaMetadata
 import by.akella.riotplayer.util.toMediaSource
 import by.akella.riotplayer.dispatchers.DispatcherProvider
+import by.akella.riotplayer.media.BecomeNoisyReceiver
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
@@ -51,6 +52,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     private lateinit var notificationManager: RiotNotificationManager
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
+    private lateinit var becomeNoisyReceiver: BecomeNoisyReceiver
     private val queueManager = QueueManager()
 
     private val myAudioAttributes = AudioAttributes.Builder()
@@ -115,6 +117,8 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         )
 
         sessionToken = mediaSession.sessionToken
+
+        becomeNoisyReceiver = BecomeNoisyReceiver(this, mediaSession.sessionToken)
 
         notificationManager = RiotNotificationManager(
             this,
@@ -271,6 +275,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
         override fun onPlay() {
             info("MediaSessionCallback onPlay")
+            becomeNoisyReceiver.register()
             playSong()
         }
 
@@ -293,6 +298,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
         override fun onStop() {
             info("MediaSessionCallback onStop")
+            becomeNoisyReceiver.unregister()
             stop()
         }
 
