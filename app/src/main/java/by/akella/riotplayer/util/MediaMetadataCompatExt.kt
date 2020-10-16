@@ -285,6 +285,8 @@ fun SongModel.toMediaMetadata(): MediaMetadataCompat{
             artist = this@toMediaMetadata.artist
             album = this@toMediaMetadata.album
             mediaUri = this@toMediaMetadata.uri.toString()
+            albumArtUri = this@toMediaMetadata.albumArt
+            duration = this@toMediaMetadata.duration
         }.build()
 }
 

@@ -9,5 +9,6 @@ val baseMusicProjection = arrayOf(
     MediaStore.Audio.AudioColumns.ALBUM_ID, // 2
     MediaStore.Audio.AlbumColumns.ALBUM, // 3
     MediaStore.Audio.AudioColumns.ARTIST_ID, // 4
-    MediaStore.Audio.ArtistColumns.ARTIST // 5
+    MediaStore.Audio.ArtistColumns.ARTIST, // 5
+    MediaStore.Audio.Media.DURATION // 6
 )

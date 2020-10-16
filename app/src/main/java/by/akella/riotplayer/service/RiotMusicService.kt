@@ -1,10 +1,8 @@
-package by.akella.riotplayer.service
+ package by.akella.riotplayer.service
 
 import android.app.PendingIntent
 import android.content.ComponentName
-import android.content.Intent
 import android.os.Bundle
-import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -15,19 +13,22 @@ import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
 import by.akella.riotplayer.media.QueueManager
-import by.akella.riotplayer.media.RiotMediaController
-import by.akella.riotplayer.repository.songs.SongModel
 import by.akella.riotplayer.repository.songs.SongsRepository
-import by.akella.riotplayer.util.*
+import by.akella.riotplayer.util.id
+import by.akella.riotplayer.util.info
+import by.akella.riotplayer.util.toMediaMetadata
+import by.akella.riotplayer.util.toMediaSource
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@AndroidEntryPoint
+ @AndroidEntryPoint
 class RiotMusicService : MediaBrowserServiceCompat() {
 
     @Inject

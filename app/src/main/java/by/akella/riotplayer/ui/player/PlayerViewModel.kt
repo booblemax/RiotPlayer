@@ -1,14 +1,13 @@
 package by.akella.riotplayer.ui.player
 
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.appcompat.app.AppCompatActivity
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.Observer
-import androidx.lifecycle.SavedStateHandle
+import by.akella.riotplayer.media.EMPTY_PLAYBACK_STATE
 import by.akella.riotplayer.media.RiotMediaController
-import by.akella.riotplayer.repository.songs.SongModel
 import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.player.state.PlayerState
@@ -25,27 +24,31 @@ class PlayerViewModel @ViewModelInject constructor(
     private val riotMediaController: RiotMediaController
 ) : BaseViewModel(dispatcherProvider), ContainerHost<PlayerState, Nothing> {
 
+    private val handler: Handler = Handler(Looper.getMainLooper())
+    private var needUpdateDuration = true
+
     private val nowPlayingSongObserver: Observer<MediaMetadataCompat>
     private val playbackStateObserver: Observer<PlaybackStateCompat>
+    private val connectionObserver: Observer<Boolean>
+    private var playbackState = EMPTY_PLAYBACK_STATE
 
     override val container: Container<PlayerState, Nothing> = container(PlayerState())
-
-    lateinit var currentMediaId: String
 
     init {
         with(riotMediaController) {
             nowPlayingSongObserver = Observer { media ->
                 orbit {
                     transform {
-                        warn("nowPlaying transform")
                         SongUiModel(
                             media.id ?: "",
                             media.title ?: "",
                             media.artist ?: "",
-                            media.mediaUri.toString()
+                            media.albumArtUri.toString(),
+                            media.duration
                         )
                     }.reduce {
-                        state.copy(song = event)
+                        val isSameSong = state.song?.id == event.id
+                        state.copy(song = event, isSameSong = isSameSong)
                     }
                 }
             }
@@ -54,7 +57,7 @@ class PlayerViewModel @ViewModelInject constructor(
             playbackStateObserver = Observer { playbackState ->
                 orbit {
                     transform {
-                        warn("Playback transform")
+                        this@PlayerViewModel.playbackState = playbackState
                         playbackState.isPlaying
                     }.reduce {
                         state.copy(isPlaying = event)
@@ -62,6 +65,14 @@ class PlayerViewModel @ViewModelInject constructor(
                 }
             }
             playbackState.observeForever(playbackStateObserver)
+
+            connectionObserver = Observer {
+                needUpdateDuration = it
+                if (it) {
+                    checkDuration()
+                }
+            }
+            isConnected.observeForever(connectionObserver)
         }
     }
 
@@ -72,18 +83,18 @@ class PlayerViewModel @ViewModelInject constructor(
         }
     }
 
-    fun play() {
+    fun play(mediaId: String = "") {
         val nowPlaying = riotMediaController.nowPlayingSong.value
 
         val isPrepared = riotMediaController.playbackState.value?.isPrepared ?: false
-        if (isPrepared && currentMediaId != nowPlaying?.id) {
+        if (isPrepared && mediaId != nowPlaying?.id) {
             riotMediaController.playbackState.value?.let { state ->
                 if (state.isPlayEnabled) {
                     riotMediaController.play()
                 }
             }
         } else {
-            riotMediaController.play(currentMediaId)
+            riotMediaController.play(mediaId)
         }
     }
 
@@ -99,11 +110,30 @@ class PlayerViewModel @ViewModelInject constructor(
         riotMediaController.prev()
     }
 
+    private fun checkDuration(): Boolean = handler.postDelayed(
+        {
+            val playPosition = playbackState.currentPlayBackPosition
+            if (playPosition != container.currentState.currentPlayPosition) {
+                orbit {
+                    transform { playPosition }.reduce { state.copy(currentPlayPosition = playPosition) }
+                }
+            }
+            if (needUpdateDuration) checkDuration()
+        },
+        POSITION_UPDATE_INTERVAL_MILLIS
+    )
+
     override fun onCleared() {
         super.onCleared()
         with(riotMediaController) {
             nowPlayingSong.removeObserver(nowPlayingSongObserver)
             playbackState.removeObserver(playbackStateObserver)
+            isConnected.removeObserver(connectionObserver)
         }
+        needUpdateDuration = false
+    }
+
+    companion object {
+        private const val POSITION_UPDATE_INTERVAL_MILLIS = 300L
     }
 }

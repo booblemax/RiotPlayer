@@ -2,7 +2,6 @@ package by.akella.riotplayer.media
 
 import android.content.ComponentName
 import android.content.Context
-import android.provider.MediaStore
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -113,7 +112,6 @@ class RiotMediaController @Inject constructor(
             nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
         }
     }
-
 }
 
 val EMPTY_PLAYBACK_STATE = PlaybackStateCompat.Builder()

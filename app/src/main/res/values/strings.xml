@@ -7,4 +7,7 @@
     <string name="error_media_not_found">Could not locate requested media.</string>
     <string name="generic_error">The application has encountered an unexpected error.</string>
 
+    <string name="duration_unknown">--:--</string>
+    <string name="duration_format">%d:%02d</string>
+
 </resources>

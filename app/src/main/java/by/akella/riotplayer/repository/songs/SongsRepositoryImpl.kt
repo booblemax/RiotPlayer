@@ -56,6 +56,7 @@ class SongsRepositoryImpl @Inject constructor(
         val albumName = cursor.getStringOrNull(3)
         val artistId = cursor.getLong(4)
         val artistName = cursor.getStringOrNull(5)
+        val duration = cursor.getLong(6)
 
         return SongModel(
             id,
@@ -68,7 +69,8 @@ class SongsRepositoryImpl @Inject constructor(
             ContentUris.withAppendedId(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 id.toLong()
-            )
+            ),
+            duration
         )
     }
 

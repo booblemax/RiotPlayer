@@ -13,5 +13,6 @@ data class SongModel(
     val albumId: Long,
     val album: String,
     val albumArt: String,
-    val uri: Uri
+    val uri: Uri,
+    val duration: Long
 ) : Parcelable

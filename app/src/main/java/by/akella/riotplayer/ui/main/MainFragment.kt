@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.MainFragmentBinding
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseFragment
@@ -28,8 +27,7 @@ class MainFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     private lateinit var adapter: MainAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = MainFragmentBinding.inflate(inflater, container, false)
         return binding.root
@@ -82,7 +80,8 @@ class MainFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         if (EasyPermissions.hasPermissions(
                 requireContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE
-            )) {
+            )
+        ) {
             viewModel.loadSongs()
         } else {
             EasyPermissions.requestPermissions(
