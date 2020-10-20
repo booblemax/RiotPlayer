@@ -12,4 +12,10 @@
 
     <string name="notification_channel_name">Now Playing</string>
     <string name="notification_channel_description">Display which song now playing in RiotMusicPlayer</string>
+
+    <!-- Tabs -->
+    <string name="tab_all_songs">All Songs</string>
+    <string name="tab_recents">Recents</string>
+    <string name="tab_albums">Albums</string>
+
 </resources>

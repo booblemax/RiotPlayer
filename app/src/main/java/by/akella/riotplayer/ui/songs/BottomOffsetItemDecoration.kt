@@ -1,4 +1,4 @@
-package by.akella.riotplayer.ui.main
+package by.akella.riotplayer.ui.songs
 
 import android.graphics.Rect
 import android.view.View

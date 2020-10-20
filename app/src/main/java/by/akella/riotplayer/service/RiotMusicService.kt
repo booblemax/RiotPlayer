@@ -14,15 +14,16 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
+import by.akella.riotplayer.dispatchers.DispatcherProvider
+import by.akella.riotplayer.media.BecomeNoisyReceiver
 import by.akella.riotplayer.media.QueueManager
 import by.akella.riotplayer.notification.RiotNotificationManager
 import by.akella.riotplayer.repository.songs.SongsRepository
+import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.toMediaMetadata
 import by.akella.riotplayer.util.toMediaSource
-import by.akella.riotplayer.dispatchers.DispatcherProvider
-import by.akella.riotplayer.media.BecomeNoisyReceiver
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
@@ -315,9 +316,13 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             info("onPlayFromMediaId -> $mediaId")
 
             mediaId?.let {
-                val mediaMetadata = songsRepository.getSong(mediaId).toMediaMetadata()
-                prepareQueue(mediaMetadata.id ?: "")
-                playSong(mediaMetadata)
+                try {
+                    val mediaMetadata = songsRepository.getSong(mediaId).toMediaMetadata()
+                    prepareQueue(mediaMetadata.id ?: "")
+                    playSong(mediaMetadata)
+                } catch (e: NoSuchElementException) {
+                    error(e.message.toString())
+                }
             }
         }
     }

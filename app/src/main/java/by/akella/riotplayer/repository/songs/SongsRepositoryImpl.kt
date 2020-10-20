@@ -7,6 +7,7 @@ import android.provider.BaseColumns
 import android.provider.MediaStore
 import androidx.core.database.getStringOrNull
 import by.akella.riotplayer.util.baseMusicProjection
+import by.akella.riotplayer.util.uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -14,39 +15,56 @@ class SongsRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : SongsRepository {
 
-    private val cache: MutableList<SongModel> = mutableListOf()
+    override suspend fun getSongs(): List<SongModel> {
+        return getSongs(IS_MUSIC)
+    }
 
-    override suspend fun getSongs(force: Boolean): List<SongModel> {
+    override suspend fun getSongsByAlbum(albumId: String): List<SongModel> {
+        val selection = "$IS_MUSIC ${MediaStore.Audio.AlbumColumns.ALBUM_ID} == $albumId"
+        return getSongs(selection)
+    }
+
+    override suspend fun getSongsByArtist(artist: String): List<SongModel> {
+        val selection = "$IS_MUSIC ${MediaStore.Audio.ArtistColumns.ARTIST} == $artist"
+        return getSongs(selection)
+    }
+
+    private fun getSongs(selection: String): List<SongModel> {
         val songs = mutableListOf<SongModel>()
 
-        if (cache.isEmpty() || force) {
-            val uri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            } else {
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        context.contentResolver.query(
+            uri,
+            baseMusicProjection,
+            selection,
+            null,
+            null
+        )?.use {
+            if (it.moveToFirst()) {
+                do {
+                    songs.add(getSongFromCursor(it))
+                } while (it.moveToNext())
             }
-
-            context.contentResolver.query(
-                uri,
-                baseMusicProjection,
-                IS_MUSIC,
-                null,
-                null
-            )?.use {
-                if (it.moveToFirst()) {
-                    do {
-                        songs.add(getSongFromCursor(it))
-                    } while (it.moveToNext())
-                }
-
-                cache.clear()
-                cache.addAll(songs)
-            } ?: throw NoSuchElementException("Error when loading list of songs")
-        } else {
-            songs.addAll(cache)
-        }
+        } ?: throw NoSuchElementException("Error when loading list of songs")
 
         return songs
+    }
+
+    override fun getSong(id: String): SongModel {
+        val selection = "$IS_MUSIC ${BaseColumns._ID} == $id"
+
+        context.contentResolver.query(
+            uri,
+            baseMusicProjection,
+            selection,
+            null,
+            null
+        )?.use {
+            if (it.moveToFirst()) {
+                return getSongFromCursor(it)
+            } else {
+                throw NoSuchElementException("Error when loading list of songs")
+            }
+        } ?: throw NoSuchElementException("Error when loading list of songs")
     }
 
     private fun getSongFromCursor(cursor: Cursor): SongModel {
@@ -72,10 +90,6 @@ class SongsRepositoryImpl @Inject constructor(
             ),
             duration
         )
-    }
-
-    override fun getSong(id: String): SongModel {
-        return cache.find { it.id == id } ?: throw NoSuchElementException("No element with id $id")
     }
 
     companion object {

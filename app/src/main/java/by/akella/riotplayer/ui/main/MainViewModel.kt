@@ -18,23 +18,9 @@ import by.akella.riotplayer.dispatchers.DispatcherProvider
 
 class MainViewModel @ViewModelInject constructor(
     dispatchersProvider: DispatcherProvider,
-    private val songsRepository: SongsRepository,
     @Assisted private val savedStateHandle: SavedStateHandle
 ) : BaseViewModel(dispatchersProvider), ContainerHost<MainState, MainSideEffect> {
 
-    override val container: Container<MainState, MainSideEffect> = container(MainState()) {
-        orbit {
-            sideEffect {
-                post(MainSideEffect.ScanFiles)
-            }
-        }
-    }
+    override val container: Container<MainState, MainSideEffect> = container(MainState())
 
-    fun loadSongs() = orbit {
-        transformSuspend {
-            songsRepository.getSongs().map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
-        }.reduce {
-            state.copy(loading = false, songs = event)
-        }
-    }
 }
