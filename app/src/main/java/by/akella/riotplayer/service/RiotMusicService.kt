@@ -188,6 +188,10 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         player.stop(true)
     }
 
+    private fun seekTo(pos: Long) {
+        player.seekTo(pos)
+    }
+
     private fun applyPlayState() {
         stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, player.currentPosition, 1f)
         mediaSession.setPlaybackState(stateBuilder.build())
@@ -304,7 +308,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
         override fun onSeekTo(pos: Long) {
             info("MediaSessionCallback onSeekTo to $pos")
-            player.seekTo(pos)
+            seekTo(pos)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {

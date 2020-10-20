@@ -47,15 +47,17 @@ class PlayerViewModel @ViewModelInject constructor(
             nowPlayingSongObserver = Observer { media ->
                 orbit {
                     transform {
-                        SongUiModel(
-                            media.id ?: "",
-                            media.title ?: "",
-                            media.artist ?: "",
-                            media.albumArtUri.toString(),
-                            media.duration
-                        )
+                        media.id?.let {
+                            SongUiModel(
+                                it,
+                                media.title ?: "",
+                                media.artist ?: "",
+                                media.albumArtUri.toString(),
+                                media.duration
+                            )
+                        }
                     }.reduce {
-                        val isSameSong = state.song?.id == event.id
+                        val isSameSong = state.song?.id == event?.id
                         state.copy(song = event, isSameSong = isSameSong)
                     }
                 }
@@ -116,6 +118,10 @@ class PlayerViewModel @ViewModelInject constructor(
 
     fun prev() {
         riotMediaController.prev()
+    }
+
+    fun seekTo(pos: Int) {
+        riotMediaController.seekTo(pos)
     }
 
     private fun checkDuration(): Boolean = handler.postDelayed(

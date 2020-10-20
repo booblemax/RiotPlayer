@@ -17,9 +17,14 @@
         <item name="android:textColor">@color/pink_light</item>
     </style>
 
-    <style name="albumImage">
+    <style name="AlbumImage">
         <item name="cornerFamily">rounded</item>
         <item name="cornerRadius">20dp</item>
     </style>
 
+    <style name="Progress">
+        <item name="trackColorActive">@color/colorAccent</item>
+        <item name="trackColorInactive">@color/pink_light</item>
+        <item name="thumbColor">@color/colorAccent</item>
+    </style>
 </resources>

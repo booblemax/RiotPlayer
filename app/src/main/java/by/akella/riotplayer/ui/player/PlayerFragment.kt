@@ -30,6 +30,7 @@ class PlayerFragment : BaseFragment() {
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
         binding.next.setOnClickListener { viewModel.next() }
         binding.prev.setOnClickListener { viewModel.prev() }
+        binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
         return binding.root
     }
 
@@ -47,10 +48,14 @@ class PlayerFragment : BaseFragment() {
                         )
                         binding.allPlayTime.text =
                             TimeUtils.convertMillisToTime(requireContext(), it.duration)
-                    }
-                    binding.progressBar.max = (it.duration / TimeUtils.MILLIS).toInt()
-                    binding.progressBar.progress = (currentPlayPosition / TimeUtils.MILLIS).toInt()
 
+                        val duration = (it.duration / TimeUtils.MILLIS).toFloat()
+                        binding.progressBar.valueTo =
+                            if (duration == 0f) DEFAULT_PROGRESS_END_POSITION else duration
+                        binding.progressBar.valueFrom = 0f
+                    }
+
+                    binding.progressBar.value = (currentPlayPosition / TimeUtils.MILLIS).toFloat()
                     binding.currentPlayTime.text =
                         TimeUtils.convertMillisToTime(requireContext(), currentPlayPosition)
                 }
@@ -62,5 +67,9 @@ class PlayerFragment : BaseFragment() {
         }
 
         viewModel.play(args.mediaId)
+    }
+
+    companion object {
+        private const val DEFAULT_PROGRESS_END_POSITION = 0.1f
     }
 }

@@ -9,6 +9,6 @@ data class PlayerState(
     val isPlaying: Boolean = false
 ) {
     override fun toString(): String {
-        return "PlayerState(isPlaying=$isPlaying, song=$song)"
+        return "PlayerState(isPlaying=$isPlaying, song=$song, isSameSong=$isSameSong. isPlaying=$isPlaying)"
     }
 }

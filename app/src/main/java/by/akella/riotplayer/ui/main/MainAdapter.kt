@@ -8,11 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.ItemSongBinding
 import by.akella.riotplayer.ui.base.model.SongUiModel
+import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.util.loadAlbumIcon
-import com.bumptech.glide.Glide
 
 class MainAdapter(
-    private val onItemClickListener: (SongUiModel) -> Unit
+    private val onItemClickListener: SafeClickListener<SongUiModel>
 ) : ListAdapter<SongUiModel, MainViewHolder>(
     object : DiffUtil.ItemCallback<SongUiModel>() {
         override fun areItemsTheSame(oldItem: SongUiModel, newItem: SongUiModel): Boolean =
@@ -26,7 +26,7 @@ class MainAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
         val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MainViewHolder(binding).also { holder ->
-            binding.root.setOnClickListener { onItemClickListener(getItem(holder.adapterPosition)) }
+            binding.root.setOnClickListener { onItemClickListener.onClick(getItem(holder.adapterPosition)) }
         }
     }
 

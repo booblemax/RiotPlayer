@@ -11,9 +11,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import by.akella.riotplayer.databinding.MainFragmentBinding
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.state.MainSideEffect
 import by.akella.riotplayer.ui.main.state.MainState
-import by.akella.riotplayer.util.*
+import by.akella.riotplayer.util.animateVisible
+import by.akella.riotplayer.util.error
+import by.akella.riotplayer.util.gone
+import by.akella.riotplayer.util.snack
+import by.akella.riotplayer.util.visible
 import com.babylon.orbit2.livedata.sideEffect
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,7 +32,9 @@ class MainFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     private lateinit var adapter: MainAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         binding = MainFragmentBinding.inflate(inflater, container, false)
         return binding.root
@@ -36,12 +43,11 @@ class MainFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //init recycler
-        adapter = MainAdapter {
+        adapter = MainAdapter(onItemClickListener = SafeClickListener {
             findNavController().navigate(
                 MainFragmentDirections.actionMainFragmentToPlayerFragment(it.id)
             )
-        }
+        })
         with(binding.localSongs) {
             addItemDecoration(BottomOffsetItemDecoration())
             layoutManager = LinearLayoutManager(requireContext())

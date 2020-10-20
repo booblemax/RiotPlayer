@@ -14,7 +14,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:shapeAppearanceOverlay="@style/albumImage" />
+        app:shapeAppearanceOverlay="@style/AlbumImage" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/song_name"
@@ -75,19 +75,19 @@
         app:layout_constraintStart_toEndOf="@+id/play_pause"
         app:srcCompat="@drawable/ic_skip_next" />
 
-    <SeekBar
+    <by.akella.riotplayer.ui.custom.MusicProgressBar
         android:id="@+id/progressBar"
-        style="@android:style/Widget.Material.SeekBar"
+        style="@style/Progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/size_48"
         android:layout_marginEnd="@dimen/size_48"
         android:layout_marginBottom="@dimen/size_72"
+        android:valueFrom="0.0"
+        android:valueTo="1.0"
         app:layout_constraintBottom_toTopOf="@+id/play_pause"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:max="100"
-        tools:progress="25" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
         style="@style/Subtitle"

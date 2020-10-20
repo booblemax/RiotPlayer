@@ -76,6 +76,12 @@ class RiotMediaController @Inject constructor(
         }
     }
 
+    fun seekTo(pos: Int) {
+        if (isConnected.value == true) {
+            transportControls.seekTo(pos.toLong())
+        }
+    }
+
     private inner class MediaBrowserConnectionCallback(
         private val context: Context
     ) : MediaBrowserCompat.ConnectionCallback() {
