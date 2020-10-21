@@ -212,7 +212,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         if (queueManager.getQueueSize() != 0) return
 
         serviceScope.launch {
-            val songs = songsRepository.getSongs()
+            val songs = songsRepository.getAllSongs()
             queueManager.setQueue(songs.toMediaMetadata(), currMediaId)
         }
     }

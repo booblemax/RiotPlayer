@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    android:animateLayoutChanges="true"
-    tools:context=".ui.main.MainFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/title"
@@ -21,43 +18,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/content"
-        android:layout_width="wrap_content"
+    <com.google.android.material.tabs.TabLayout
+        style="@style/TabLayout"
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:constraint_referenced_ids="local_songs, local_title" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/local_title"
-        style="@style/Title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/size_24"
         android:layout_marginTop="@dimen/size_12"
-        android:text="@string/main_title_local"
-        android:textSize="@dimen/text_size_20"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
+        app:layout_constraintTop_toBottomOf="@id/title"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/local_songs"
-        android:layout_width="0dp"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/size_12"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/local_title"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/item_song" />
-
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tabs" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

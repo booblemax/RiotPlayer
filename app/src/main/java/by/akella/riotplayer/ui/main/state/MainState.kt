@@ -11,7 +11,7 @@ data class MainState(
     }
 }
 
-enum class MusicTabs(val tab: Int) {
+enum class MusicTabs(val tabName: Int) {
     ALL_SONGS(R.string.tab_all_songs),
     RECENTS(R.string.tab_recents),
     ALBUMS(R.string.tab_albums)

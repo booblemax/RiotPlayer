@@ -4,14 +4,13 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorSurface">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-
 
     <style name="Title">
         <item name="android:textColor">@color/white</item>
     </style>
-
 
     <style name="Subtitle">
         <item name="android:textColor">@color/pink_light</item>
@@ -27,4 +26,11 @@
         <item name="trackColorInactive">@color/pink_light</item>
         <item name="thumbColor">@color/colorAccent</item>
     </style>
+
+    <style name="TabLayout" parent="Widget.MaterialComponents.TabLayout.Colored">
+        <item name="tabIndicatorColor">@color/colorAccent</item>
+        <item name="tabTextColor">@color/pink_light</item>
+        <item name="tabIndicatorFullWidth">false</item>
+    </style>
+
 </resources>

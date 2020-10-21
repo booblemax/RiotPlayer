@@ -5,17 +5,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import by.akella.riotplayer.databinding.MainFragmentBinding
+import by.akella.riotplayer.databinding.SongsFragmentBinding
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
-import by.akella.riotplayer.ui.main.state.MainSideEffect
-import by.akella.riotplayer.ui.main.state.MainState
+import by.akella.riotplayer.ui.main.state.MusicTabs
 import by.akella.riotplayer.util.animateVisible
+import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.snack
 import by.akella.riotplayer.util.visible
@@ -28,22 +29,25 @@ import pub.devrel.easypermissions.EasyPermissions
 class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
 
     private val viewModel: SongsViewModel by viewModels()
-    private lateinit var binding: MainFragmentBinding
-    private lateinit var adapter: MainAdapter
+    private lateinit var binding: SongsFragmentBinding
+    private lateinit var adapter: SongsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = MainFragmentBinding.inflate(inflater, container, false)
+        binding = SongsFragmentBinding.inflate(inflater, container, false)
+        arguments?.getInt(ARG_TAB_TYPE)?.let {
+            viewModel.songType = MusicTabs.values()[it]
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = MainAdapter(onItemClickListener = SafeClickListener {
+        adapter = SongsAdapter(onItemClickListener = SafeClickListener {
             findNavController().navigate(
                 MainFragmentDirections.actionMainFragmentToPlayerFragment(it.id)
             )
@@ -63,15 +67,15 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         with(state) {
             if (loading) {
                 binding.progress.visible()
-                binding.content.gone()
+                binding.localSongs.gone()
             } else {
                 binding.progress.gone()
-                binding.content.animateVisible()
+                binding.localSongs.animateVisible()
             }
 
             adapter.submitList(songs)
         }
-        by.akella.riotplayer.util.error(state.toString())
+        error(state.toString())
     }
 
     private fun processSideEffect(sideEffect: SongsSideEffect) {
@@ -111,5 +115,12 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
 
     companion object {
         const val REQUEST_INTERNAL_STORAGE = 1000
+        const val ARG_TAB_TYPE = "arg_tab_type"
+
+        fun create(tabType: MusicTabs): Fragment = SongsFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARG_TAB_TYPE, tabType.ordinal)
+            }
+        }
     }
 }

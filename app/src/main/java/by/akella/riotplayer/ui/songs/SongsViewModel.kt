@@ -7,6 +7,7 @@ import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
+import by.akella.riotplayer.ui.main.state.MusicTabs
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.coroutines.transformSuspend
@@ -20,6 +21,8 @@ class SongsViewModel @ViewModelInject constructor(
     @Assisted private val savedStateHandle: SavedStateHandle
 ) : BaseViewModel(dispatchersProvider), ContainerHost<SongsState, SongsSideEffect> {
 
+    var songType: MusicTabs? = null
+
     override val container: Container<SongsState, SongsSideEffect> = container(SongsState()) {
         orbit {
             sideEffect {
@@ -30,9 +33,15 @@ class SongsViewModel @ViewModelInject constructor(
 
     fun loadSongs() = orbit {
         transformSuspend {
-            songsRepository.getSongs().map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
+            loadSongByType().map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
         }.reduce {
             state.copy(loading = false, songs = event)
         }
+    }
+
+    private suspend fun loadSongByType() = when (songType) {
+        MusicTabs.ALL_SONGS -> songsRepository.getAllSongs()
+        MusicTabs.RECENTS -> songsRepository.getRecentSongs()
+        else -> listOf()
     }
 }

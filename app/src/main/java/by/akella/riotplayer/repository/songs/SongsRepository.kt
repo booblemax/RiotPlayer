@@ -2,7 +2,9 @@ package by.akella.riotplayer.repository.songs
 
 interface SongsRepository {
 
-    suspend fun getSongs(): List<SongModel>
+    suspend fun getAllSongs(): List<SongModel>
+
+    suspend fun getRecentSongs(): List<SongModel>
 
     suspend fun getSongsByAlbum(albumId: String): List<SongModel>
 

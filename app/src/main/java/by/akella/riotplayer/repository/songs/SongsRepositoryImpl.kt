@@ -15,7 +15,11 @@ class SongsRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : SongsRepository {
 
-    override suspend fun getSongs(): List<SongModel> {
+    override suspend fun getRecentSongs(): List<SongModel> {
+        return getSongs(IS_MUSIC)
+    }
+
+    override suspend fun getAllSongs(): List<SongModel> {
         return getSongs(IS_MUSIC)
     }
 

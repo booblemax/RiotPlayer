@@ -11,9 +11,9 @@ import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.util.loadAlbumIcon
 
-class MainAdapter(
+class SongsAdapter(
     private val onItemClickListener: SafeClickListener<SongUiModel>
-) : ListAdapter<SongUiModel, MainViewHolder>(
+) : ListAdapter<SongUiModel, SongsViewHolder>(
     object : DiffUtil.ItemCallback<SongUiModel>() {
         override fun areItemsTheSame(oldItem: SongUiModel, newItem: SongUiModel): Boolean =
             oldItem.id == newItem.id
@@ -23,19 +23,19 @@ class MainAdapter(
     }
 ) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongsViewHolder {
         val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MainViewHolder(binding).also { holder ->
+        return SongsViewHolder(binding).also { holder ->
             binding.root.setOnClickListener { onItemClickListener.onClick(getItem(holder.adapterPosition)) }
         }
     }
 
-    override fun onBindViewHolder(holder: MainViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SongsViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 }
 
-class MainViewHolder(private val binding: ItemSongBinding) : RecyclerView.ViewHolder(binding.root) {
+class SongsViewHolder(private val binding: ItemSongBinding) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(song: SongUiModel) {
         with(binding) {

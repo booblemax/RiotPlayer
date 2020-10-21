@@ -6,6 +6,8 @@ import by.akella.riotplayer.dispatchers.DefaultDispatcherProvider
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.QueueManager
 import by.akella.riotplayer.media.RiotMediaController
+import by.akella.riotplayer.repository.albums.AlbumRepository
+import by.akella.riotplayer.repository.albums.AlbumRepositoryImpl
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.repository.songs.SongsRepositoryImpl
 import by.akella.riotplayer.service.RiotMusicService
@@ -26,10 +28,14 @@ class CommonModule {
         return RiotMediaController(context, ComponentName(context, RiotMusicService::class.java))
     }
 
-    @Singleton
     @Provides
     fun provideSongsRepository(@ApplicationContext context: Context): SongsRepository {
         return SongsRepositoryImpl(context)
+    }
+
+    @Provides
+    fun provideAlbumRepository(@ApplicationContext context: Context): AlbumRepository {
+        return AlbumRepositoryImpl(context)
     }
 
     @Singleton
