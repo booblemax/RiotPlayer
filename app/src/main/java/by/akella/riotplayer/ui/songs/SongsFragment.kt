@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import by.akella.riotplayer.databinding.SongsFragmentBinding
+import by.akella.riotplayer.databinding.ItemsFragmentBinding
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.custom.SafeClickListener
@@ -29,7 +29,7 @@ import pub.devrel.easypermissions.EasyPermissions
 class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
 
     private val viewModel: SongsViewModel by viewModels()
-    private lateinit var binding: SongsFragmentBinding
+    private lateinit var binding: ItemsFragmentBinding
     private lateinit var adapter: SongsAdapter
 
     override fun onCreateView(
@@ -37,7 +37,7 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = SongsFragmentBinding.inflate(inflater, container, false)
+        binding = ItemsFragmentBinding.inflate(inflater, container, false)
         arguments?.getInt(ARG_TAB_TYPE)?.let {
             viewModel.songType = MusicTabs.values()[it]
         }
@@ -52,7 +52,7 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
                 MainFragmentDirections.actionMainFragmentToPlayerFragment(it.id)
             )
         })
-        with(binding.localSongs) {
+        with(binding.items) {
             addItemDecoration(BottomOffsetItemDecoration())
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
@@ -67,10 +67,10 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         with(state) {
             if (loading) {
                 binding.progress.visible()
-                binding.localSongs.gone()
+                binding.items.gone()
             } else {
                 binding.progress.gone()
-                binding.localSongs.animateVisible()
+                binding.items.animateVisible()
             }
 
             adapter.submitList(songs)

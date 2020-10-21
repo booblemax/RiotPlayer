@@ -18,4 +18,9 @@
     <string name="tab_recents">Recents</string>
     <string name="tab_albums">Albums</string>
 
+    <plurals name="count_songs">
+        <item quantity="one">%s song</item>
+        <item quantity="many">%s songs</item>
+        <item quantity="other">%s songs</item>
+    </plurals>
 </resources>

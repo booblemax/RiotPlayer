@@ -8,9 +8,9 @@ class SafeClickListener<T : Any?>(
 
     private var lastClickTime = 0L
 
-    fun onClick(param: T) {
+    operator fun invoke(item: T) {
         if (SystemClock.elapsedRealtime() - lastClickTime > CLICK_DELAY) {
-            action(param)
+            action(item)
         }
         lastClickTime = SystemClock.elapsedRealtime()
     }

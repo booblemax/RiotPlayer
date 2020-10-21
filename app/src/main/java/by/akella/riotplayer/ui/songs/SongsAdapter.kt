@@ -26,7 +26,7 @@ class SongsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongsViewHolder {
         val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SongsViewHolder(binding).also { holder ->
-            binding.root.setOnClickListener { onItemClickListener.onClick(getItem(holder.adapterPosition)) }
+            binding.root.setOnClickListener { onItemClickListener(getItem(holder.adapterPosition)) }
         }
     }
 

@@ -6,6 +6,8 @@ import by.akella.riotplayer.repository.albums.AlbumRepository
 import by.akella.riotplayer.ui.base.BaseViewModel
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
+import com.babylon.orbit2.coroutines.transformSuspend
+import com.babylon.orbit2.reduce
 import com.babylon.orbit2.viewmodel.container
 
 class AlbumsViewModel @ViewModelInject constructor(
@@ -15,4 +17,11 @@ class AlbumsViewModel @ViewModelInject constructor(
 
     override val container: Container<AlbumsState, Nothing> = container(AlbumsState())
 
+    fun load() = orbit {
+        transformSuspend {
+            albumsRepository.getAlbums()
+        }.reduce {
+            state.copy(loading = false, albums = event)
+        }
+    }
 }

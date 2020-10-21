@@ -11,10 +11,9 @@ class AlbumRepositoryImpl(
 
     override suspend fun getAlbums(): List<AlbumModel> {
         val projection = arrayOf(
-            MediaStore.Audio.AlbumColumns.ALBUM_ID,
-            MediaStore.Audio.AlbumColumns.ALBUM,
-            MediaStore.Audio.AlbumColumns.ARTIST,
-            MediaStore.Audio.AlbumColumns.NUMBER_OF_SONGS,
+            MediaStore.Audio.Albums.ALBUM_ID,
+            MediaStore.Audio.Albums.ALBUM,
+            MediaStore.Audio.Albums.ARTIST
         )
 
         val albums = mutableListOf<AlbumModel>()
@@ -33,19 +32,19 @@ class AlbumRepositoryImpl(
             }
         }
 
-        return albums
+        return albums.distinctBy { it.name }
     }
 
     private fun getAlbumFromCursor(cursor: Cursor): AlbumModel {
         val id = cursor.getString(0)
         val album = cursor.getString(1)
         val artist = cursor.getString(2)
-        val songCount = cursor.getInt(3)
 
-        return AlbumModel(id, album, artist, songCount)
+        return AlbumModel(id, "${ALBUM_ART_URI}/$id",album, artist)
     }
 
     companion object {
         const val IS_ALBUM = "${MediaStore.Audio.AlbumColumns.ALBUM} != ''"
+        const val ALBUM_ART_URI = "content://media/external/audio/albumart"
     }
 }
