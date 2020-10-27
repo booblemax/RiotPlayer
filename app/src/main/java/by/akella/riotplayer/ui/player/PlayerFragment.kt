@@ -47,7 +47,7 @@ class PlayerFragment : BaseFragment() {
                             R.drawable.ic_musical_note
                         )
                         binding.allPlayTime.text =
-                            TimeUtils.convertMillisToTime(requireContext(), it.duration)
+                            TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
 
                         val duration = (it.duration / TimeUtils.MILLIS).toFloat()
                         binding.progressBar.valueTo =
@@ -57,7 +57,7 @@ class PlayerFragment : BaseFragment() {
 
                     binding.progressBar.value = (currentPlayPosition / TimeUtils.MILLIS).toFloat()
                     binding.currentPlayTime.text =
-                        TimeUtils.convertMillisToTime(requireContext(), currentPlayPosition)
+                        TimeUtils.convertMillisToShortTime(requireContext(), currentPlayPosition)
                 }
                 binding.playPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause

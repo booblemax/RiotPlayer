@@ -24,12 +24,12 @@ class SongsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getSongsByAlbum(albumId: String): List<SongModel> {
-        val selection = "$IS_MUSIC ${MediaStore.Audio.AlbumColumns.ALBUM_ID} == $albumId"
+        val selection = "$IS_MUSIC AND ${MediaStore.Audio.AlbumColumns.ALBUM_ID} == $albumId"
         return getSongs(selection)
     }
 
     override suspend fun getSongsByArtist(artist: String): List<SongModel> {
-        val selection = "$IS_MUSIC ${MediaStore.Audio.ArtistColumns.ARTIST} == $artist"
+        val selection = "$IS_MUSIC AND ${MediaStore.Audio.ArtistColumns.ARTIST} == $artist"
         return getSongs(selection)
     }
 
@@ -54,7 +54,7 @@ class SongsRepositoryImpl @Inject constructor(
     }
 
     override fun getSong(id: String): SongModel {
-        val selection = "$IS_MUSIC ${BaseColumns._ID} == $id"
+        val selection = "$IS_MUSIC AND ${BaseColumns._ID} == $id"
 
         context.contentResolver.query(
             uri,

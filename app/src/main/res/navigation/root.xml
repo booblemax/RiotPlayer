@@ -9,11 +9,15 @@
         android:id="@+id/mainFragment"
         android:name="by.akella.riotplayer.ui.main.MainFragment"
         android:label="main_fragment"
-        tools:layout="@layout/items_fragment" >
+        tools:layout="@layout/main_fragment" >
         <action
             android:id="@+id/action_mainFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_albumDetailsFragment"
+            app:destination="@id/albumDetailsFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/playerFragment"
         android:name="by.akella.riotplayer.ui.player.PlayerFragment"
@@ -22,5 +26,16 @@
         <argument
             android:name="mediaId"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/albumDetailsFragment"
+        android:name="by.akella.riotplayer.ui.albumdetails.AlbumDetailsFragment"
+        android:label="AlbumDetailsFragment" >
+        <action
+            android:id="@+id/action_albumDetailsFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+        <argument
+            android:name="albumModel"
+            app:argType="by.akella.riotplayer.repository.albums.AlbumModel" />
     </fragment>
 </navigation>

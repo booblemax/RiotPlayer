@@ -5,11 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import by.akella.riotplayer.databinding.ItemsFragmentBinding
 import by.akella.riotplayer.repository.albums.AlbumModel
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.custom.SafeClickListener
+import by.akella.riotplayer.ui.main.MainFragmentDirections
 import by.akella.riotplayer.util.animateVisible
 import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.visible
@@ -58,7 +60,9 @@ class AlbumsFragment : BaseFragment() {
     }
 
     private fun navigateToAlbumDetails(albumModel: AlbumModel) {
-
+        findNavController().navigate(
+            MainFragmentDirections.actionMainFragmentToAlbumDetailsFragment((albumModel))
+        )
     }
 
     companion object {
