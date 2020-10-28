@@ -6,13 +6,15 @@ import android.database.Cursor
 import android.provider.BaseColumns
 import android.provider.MediaStore
 import androidx.core.database.getStringOrNull
+import by.akella.riotplayer.db.SongDao
 import by.akella.riotplayer.util.baseMusicProjection
 import by.akella.riotplayer.util.uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class SongsRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val songDao: SongDao
 ) : SongsRepository {
 
     override suspend fun getRecentSongs(): List<SongModel> {
