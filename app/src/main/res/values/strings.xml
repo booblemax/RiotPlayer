@@ -3,6 +3,8 @@
     <string name="main_library">Library</string>
     <string name="main_title_local">Local</string>
 
+    <string name="empty_items">Empty list</string>
+
     <!-- Error messages -->
     <string name="error_media_not_found">Could not locate requested media.</string>
     <string name="generic_error">The application has encountered an unexpected error.</string>

@@ -164,6 +164,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         applyPlayState()
 
         media?.let {
+            media.id?.let { id -> saveSongIntoHistory(id) }
             mediaSession.setMetadata(it)
             val mediaSource = it.toMediaSource(dataFactory)
             player.setMediaSource(mediaSource)
@@ -214,6 +215,12 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         serviceScope.launch {
             val songs = songsRepository.getAllSongs()
             queueManager.setQueue(songs.toMediaMetadata(), currMediaId)
+        }
+    }
+
+    private fun saveSongIntoHistory(songId: String) {
+        serviceScope.launch(dispatcherProvider.io()) {
+            songsRepository.insertSongToRecent(songId)
         }
     }
 

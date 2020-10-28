@@ -3,6 +3,7 @@ package by.akella.riotplayer.repository.songs
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
+import by.akella.riotplayer.db.SongEntity
 import by.akella.riotplayer.util.toUri
 
 data class SongModel(

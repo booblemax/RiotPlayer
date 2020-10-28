@@ -17,6 +17,32 @@
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/item_song" />
 
+    <androidx.appcompat.widget.AppCompatTextView
+        style="@style/Title.Bold"
+        android:id="@+id/empty_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_items"
+        android:textSize="@dimen/text_size_36"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/clearHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size_16"
+        android:layout_marginEnd="@dimen/size_24"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_clear"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
     <ProgressBar
         android:id="@+id/progress"
         android:layout_width="80dp"

@@ -1,26 +1,17 @@
 package by.akella.riotplayer.ui.main
 
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.SavedStateHandle
-import by.akella.riotplayer.repository.songs.SongsRepository
+import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.ui.base.BaseViewModel
-import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.main.state.MainSideEffect
 import by.akella.riotplayer.ui.main.state.MainState
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
-import com.babylon.orbit2.coroutines.transformSuspend
-import com.babylon.orbit2.reduce
-import com.babylon.orbit2.sideEffect
 import com.babylon.orbit2.viewmodel.container
-import by.akella.riotplayer.dispatchers.DispatcherProvider
 
 class MainViewModel @ViewModelInject constructor(
-    dispatchersProvider: DispatcherProvider,
-    @Assisted private val savedStateHandle: SavedStateHandle
+    dispatchersProvider: DispatcherProvider
 ) : BaseViewModel(dispatchersProvider), ContainerHost<MainState, MainSideEffect> {
 
     override val container: Container<MainState, MainSideEffect> = container(MainState())
-
 }

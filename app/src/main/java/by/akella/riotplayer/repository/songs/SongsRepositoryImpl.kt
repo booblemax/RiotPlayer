@@ -7,7 +7,10 @@ import android.provider.BaseColumns
 import android.provider.MediaStore
 import androidx.core.database.getStringOrNull
 import by.akella.riotplayer.db.SongDao
+import by.akella.riotplayer.db.SongEntity
 import by.akella.riotplayer.util.baseMusicProjection
+import by.akella.riotplayer.util.toEntity
+import by.akella.riotplayer.util.toModel
 import by.akella.riotplayer.util.uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -18,7 +21,20 @@ class SongsRepositoryImpl @Inject constructor(
 ) : SongsRepository {
 
     override suspend fun getRecentSongs(): List<SongModel> {
-        return getSongs(IS_MUSIC)
+        return songDao.getSongs().map { it.toModel() }
+    }
+
+    override suspend fun insertSongToRecent(songId: String) {
+        try {
+            val songModel = getSong(songId)
+            songDao.insert(songModel.toEntity())
+        } catch (e: NoSuchElementException) {
+            error(e.message ?: "")
+        }
+    }
+
+    override suspend fun clearRecent() {
+        songDao.removeAllSongs()
     }
 
     override suspend fun getAllSongs(): List<SongModel> {
@@ -68,9 +84,9 @@ class SongsRepositoryImpl @Inject constructor(
             if (it.moveToFirst()) {
                 return getSongFromCursor(it)
             } else {
-                throw NoSuchElementException("Error when loading list of songs")
+                throw NoSuchElementException("Error when loading song with id $id")
             }
-        } ?: throw NoSuchElementException("Error when loading list of songs")
+        } ?: throw NoSuchElementException("Error when loading song with id $id")
     }
 
     private fun getSongFromCursor(cursor: Cursor): SongModel {

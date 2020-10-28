@@ -48,9 +48,16 @@ class AlbumsFragment : BaseFragment() {
             if (it.loading) {
                 binding.progress.visible()
                 binding.items.gone()
+                binding.emptyText.gone()
             } else {
                 binding.progress.gone()
-                binding.items.animateVisible()
+                if (it.albums.isEmpty()) {
+                    binding.items.gone()
+                    binding.emptyText.visible()
+                } else {
+                    binding.items.visible()
+                    binding.emptyText.gone()
+                }
             }
 
             adapter.submitList(it.albums)

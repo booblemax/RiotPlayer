@@ -25,6 +25,7 @@ import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.MediaItem
+
 /**
  * Useful extensions for [MediaMetadataCompat].
  */
@@ -251,55 +252,6 @@ inline var MediaMetadataCompat.Builder.flag: Int
     set(value) {
         putLong(METADATA_KEY_UAMP_FLAGS, value.toLong())
     }
-
-/**
- * Extension method for building an [ExtractorMediaSource] from a [MediaMetadataCompat] object.
- *
- * For convenience, place the [MediaDescriptionCompat] into the tag so it can be retrieved later.
- */
-fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory) =
-    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mediaUri))
-
-/**
- * Extension method for building a [ConcatenatingMediaSource] given a [List]
- * of [MediaMetadataCompat] objects.
- */
-fun List<MediaMetadataCompat>.toMediaSource(
-    dataSourceFactory: DataSource.Factory
-): ConcatenatingMediaSource {
-
-    val concatenatingMediaSource = ConcatenatingMediaSource()
-    forEach {
-        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory))
-    }
-    return concatenatingMediaSource
-}
-
-fun SongModel.toMediaMetadata(): MediaMetadataCompat{
-    val builder = MediaMetadataCompat.Builder()
-    return builder.apply {
-            id = this@toMediaMetadata.id
-            title = this@toMediaMetadata.title
-            artist = this@toMediaMetadata.artist
-            album = this@toMediaMetadata.album
-            mediaUri = this@toMediaMetadata.uri.toString()
-            albumArtUri = this@toMediaMetadata.albumArt
-            duration = this@toMediaMetadata.duration
-        }.build()
-}
-
-fun List<SongModel>.toMediaMetadata(): List<MediaMetadataCompat> {
-    val builder = MediaMetadataCompat.Builder()
-    return map { song ->
-        builder.apply {
-            id = song.id
-            title = song.title
-            artist = song.artist
-            album = song.album
-            mediaUri = song.uri.toString()
-        }.build()
-    }
-}
 
 fun MediaMetadataCompat.print() = "MediaMetadata ($id, $title, $album, $artist)"
 

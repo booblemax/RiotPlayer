@@ -12,12 +12,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import by.akella.riotplayer.databinding.ItemsFragmentBinding
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
 import by.akella.riotplayer.ui.main.state.MusicTabs
 import by.akella.riotplayer.util.animateVisible
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.gone
+import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.snack
 import by.akella.riotplayer.util.visible
 import com.babylon.orbit2.livedata.sideEffect
@@ -32,26 +34,28 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     private lateinit var binding: ItemsFragmentBinding
     private lateinit var adapter: SongsAdapter
 
+    override fun onResume() {
+        super.onResume()
+        val songType = viewModel.container.currentState.songType
+        if (songType == MusicTabs.RECENTS) {
+            viewModel.loadSongs(songType)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = ItemsFragmentBinding.inflate(inflater, container, false)
-        arguments?.getInt(ARG_TAB_TYPE)?.let {
-            viewModel.songType = MusicTabs.values()[it]
-        }
+        binding.clearHistory.setOnClickListener { viewModel.clearHistory() }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(onItemClickListener = SafeClickListener {
-            findNavController().navigate(
-                MainFragmentDirections.actionMainFragmentToPlayerFragment(it.id)
-            )
-        })
+        adapter = SongsAdapter(SafeClickListener { navigateToPlayer(it) })
         with(binding.items) {
             addItemDecoration(BottomOffsetItemDecoration())
             layoutManager = LinearLayoutManager(requireContext())
@@ -68,9 +72,23 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
             if (loading) {
                 binding.progress.visible()
                 binding.items.gone()
+                binding.clearHistory.gone()
+                binding.emptyText.gone()
             } else {
                 binding.progress.gone()
-                binding.items.animateVisible()
+
+                if (viewModel.container.currentState.songType == MusicTabs.RECENTS &&
+                    songs.isNotEmpty()) {
+                    binding.clearHistory.visible()
+                }
+
+                if (songs.isEmpty()) {
+                    binding.items.gone()
+                    binding.emptyText.visible()
+                } else {
+                    binding.emptyText.gone()
+                    binding.items.visible()
+                }
             }
 
             adapter.submitList(songs)
@@ -92,7 +110,9 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
                 Manifest.permission.READ_EXTERNAL_STORAGE
             )
         ) {
-            viewModel.loadSongs()
+            val songTypePosition = arguments?.getInt(ARG_TAB_TYPE)
+            viewModel.loadSongs(songTypePosition?.let { MusicTabs.values()[it] }
+                ?: MusicTabs.ALL_SONGS)
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -111,6 +131,12 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
 
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
         view?.snack("Need permission to read music") { onBackPressed() }
+    }
+
+    private fun navigateToPlayer(songUiModel: SongUiModel) {
+        findNavController().navigate(
+            MainFragmentDirections.actionMainFragmentToPlayerFragment(songUiModel.id)
+        )
     }
 
     companion object {

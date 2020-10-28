@@ -12,9 +12,9 @@ class PagerAdapter(parent: Fragment) : FragmentStateAdapter(parent) {
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> SongsFragment.create(MusicTabs.ALL_SONGS)
-            1 -> SongsFragment.create(MusicTabs.RECENTS)
-            else -> AlbumsFragment.create()
+            0 -> AlbumsFragment.create()
+            1 -> SongsFragment.create(MusicTabs.ALL_SONGS)
+            else -> SongsFragment.create(MusicTabs.RECENTS)
         }
     }
 }
