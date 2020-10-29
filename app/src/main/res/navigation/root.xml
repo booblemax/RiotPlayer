@@ -26,6 +26,9 @@
         <argument
             android:name="mediaId"
             app:argType="string" />
+        <argument
+            android:name="musicType"
+            app:argType="integer" />
     </fragment>
     <fragment
         android:id="@+id/albumDetailsFragment"

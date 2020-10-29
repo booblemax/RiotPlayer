@@ -17,8 +17,11 @@ import by.akella.riotplayer.R
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.BecomeNoisyReceiver
 import by.akella.riotplayer.media.QueueManager
+import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.notification.RiotNotificationManager
+import by.akella.riotplayer.repository.songs.SongModel
 import by.akella.riotplayer.repository.songs.SongsRepository
+import by.akella.riotplayer.ui.main.state.MusicTabs
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
@@ -55,6 +58,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var becomeNoisyReceiver: BecomeNoisyReceiver
     private val queueManager = QueueManager()
+    private var musicType: MusicTabs? = null
 
     private val myAudioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -209,12 +213,15 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         mediaSession.setPlaybackState(stateBuilder.build())
     }
 
-    private fun prepareQueue(currMediaId: String = "") {
-        if (queueManager.getQueueSize() != 0) return
-
-        serviceScope.launch {
-            val songs = songsRepository.getAllSongs()
-            queueManager.setQueue(songs.toMediaMetadata(), currMediaId)
+    private fun prepareQueue(songModel: SongModel, extra: Bundle? = null) {
+        serviceScope.launch(dispatcherProvider.io()) {
+            val songs = when (musicType) {
+                MusicTabs.ALBUMS -> songsRepository.getSongsByAlbum(songModel.albumId.toString())
+                MusicTabs.RECENTS -> songsRepository.getRecentSongs()
+                MusicTabs.ALL_SONGS -> songsRepository.getAllSongs()
+                else -> emptyList()
+            }
+            queueManager.setQueue(songs.toMediaMetadata(), songModel.id)
         }
     }
 
@@ -323,19 +330,29 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             info("onPlayFromMediaId -> $mediaId")
 
-            mediaId?.let {
-                try {
-                    val mediaMetadata = songsRepository.getSong(mediaId).toMediaMetadata()
-                    prepareQueue(mediaMetadata.id ?: "")
-                    playSong(mediaMetadata)
-                } catch (e: NoSuchElementException) {
-                    error(e.message.toString())
+            val musicTabsType =
+                extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicTabs
+
+            if (musicTabsType == musicType) {
+                playSong()
+            } else {
+                musicType = musicTabsType
+                mediaId?.let {
+                    try {
+                        val songModel = songsRepository.getSong(mediaId)
+                        prepareQueue(songModel, extras)
+                        val mediaMetadata = songModel.toMediaMetadata()
+                        playSong(mediaMetadata)
+                    } catch (e: NoSuchElementException) {
+                        error(e.message.toString())
+                    }
                 }
             }
         }
     }
 
-    private inner class PlayerNotificationListener : PlayerNotificationManager.NotificationListener {
+    private inner class PlayerNotificationListener :
+        PlayerNotificationManager.NotificationListener {
 
         override fun onNotificationPosted(
             notificationId: Int,

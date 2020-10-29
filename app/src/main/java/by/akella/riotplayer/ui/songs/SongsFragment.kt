@@ -135,7 +135,10 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
 
     private fun navigateToPlayer(songUiModel: SongUiModel) {
         findNavController().navigate(
-            MainFragmentDirections.actionMainFragmentToPlayerFragment(songUiModel.id)
+            MainFragmentDirections.actionMainFragmentToPlayerFragment(
+                songUiModel.id,
+                viewModel.container.currentState.songType?.ordinal ?: 0
+            )
         )
     }
 

@@ -15,6 +15,7 @@ import by.akella.riotplayer.databinding.AlbumDetailsFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.base.OffsetItemDecoration
 import by.akella.riotplayer.ui.custom.SafeClickListener
+import by.akella.riotplayer.ui.main.state.MusicTabs
 import by.akella.riotplayer.ui.songs.BottomOffsetItemDecoration
 import by.akella.riotplayer.ui.songs.SongsAdapter
 import by.akella.riotplayer.util.TimeUtils
@@ -111,7 +112,9 @@ class AlbumDetailsFragment : BaseFragment() {
 
     private fun navigateToPlayer(mediaId: String) {
         findNavController().navigate(
-            AlbumDetailsFragmentDirections.actionAlbumDetailsFragmentToPlayerFragment(mediaId)
+            AlbumDetailsFragmentDirections.actionAlbumDetailsFragmentToPlayerFragment(
+                mediaId, MusicTabs.ALBUMS.ordinal
+            )
         )
     }
 

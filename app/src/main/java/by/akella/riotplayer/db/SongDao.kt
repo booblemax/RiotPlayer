@@ -19,7 +19,7 @@ interface SongDao {
     @Update
     fun update(song: SongEntity)
 
-    @Query("SELECT * from songs order by id DESC")
+    @Query("SELECT * from songs order by id ASC")
     fun getSongs(): List<SongEntity>
 
     @Query("DELETE from songs")

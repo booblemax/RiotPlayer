@@ -2,6 +2,7 @@ package by.akella.riotplayer.media
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -48,10 +49,10 @@ class RiotMediaController @Inject constructor(
         mediaBrowser.unsubscribe(parentId, callback)
     }
 
-    fun play(mediaId: String? = null) {
+    fun play(mediaId: String? = null, extra: Bundle? = null) {
         if (isConnected.value == true) {
             if (mediaId != null) {
-                transportControls.playFromMediaId(mediaId, null)
+                transportControls.playFromMediaId(mediaId, extra)
             } else {
                 transportControls.play()
             }
@@ -115,6 +116,10 @@ class RiotMediaController @Inject constructor(
             info("${this::class.java.simpleName} Metadata State changed on ${metadata?.print()}")
             nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
         }
+    }
+
+    companion object {
+        const val ARG_MUSIC_TYPE = "arg_music_type"
     }
 }
 

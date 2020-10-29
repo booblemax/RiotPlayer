@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.main.state.MusicTabs
 import by.akella.riotplayer.util.TimeUtils
 import by.akella.riotplayer.util.loadAlbumIcon
 import by.akella.riotplayer.util.warn
@@ -70,7 +71,7 @@ class PlayerFragment : BaseFragment() {
             }
         }
 
-        viewModel.play(args.mediaId)
+        viewModel.play(args.mediaId, MusicTabs.values()[args.musicType])
     }
 
     companion object {

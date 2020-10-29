@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.core.os.bundleOf
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.Observer
 import by.akella.riotplayer.media.EMPTY_PLAYBACK_STATE
@@ -26,6 +27,7 @@ import com.babylon.orbit2.reduce
 import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
 import by.akella.riotplayer.dispatchers.DispatcherProvider
+import by.akella.riotplayer.ui.main.state.MusicTabs
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.stateName
 
@@ -96,19 +98,11 @@ class PlayerViewModel @ViewModelInject constructor(
         }
     }
 
-    fun play(mediaId: String) {
-        val nowPlaying = riotMediaController.nowPlayingSong.value
-
-        val isPrepared = riotMediaController.playbackState.value?.isPrepared ?: false
-        if (isPrepared && mediaId == nowPlaying?.id) {
-            riotMediaController.playbackState.value?.let { state ->
-                if (state.isPlayEnabled) {
-                    riotMediaController.play()
-                }
-            }
-        } else {
-            riotMediaController.play(mediaId)
-        }
+    fun play(mediaId: String, musicType: MusicTabs? = null) {
+        riotMediaController.play(
+            mediaId,
+            bundleOf(RiotMediaController.ARG_MUSIC_TYPE to musicType)
+        )
     }
 
     fun pause() {

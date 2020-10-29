@@ -10,7 +10,7 @@ class QueueManager @Inject constructor() {
     private val playingQueue: MutableList<MediaMetadataCompat> = mutableListOf()
 
     private fun setCurrentIndex(index: Int) {
-        if (index > 0 && index < playingQueue.size) {
+        if (index >= 0 && index < playingQueue.size) {
             currentIndex = index
         }
     }
@@ -41,7 +41,7 @@ class QueueManager @Inject constructor() {
         setCurrentIndex(index)
     }
 
-    fun getCurrentSong(): MediaMetadataCompat = playingQueue[currentIndex]
+    fun getCurrentSong(): MediaMetadataCompat? = playingQueue.getOrNull(currentIndex)
 
     fun getQueueSize() = playingQueue.size
 
