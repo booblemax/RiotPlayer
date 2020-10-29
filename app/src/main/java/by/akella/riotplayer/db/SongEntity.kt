@@ -16,5 +16,6 @@ data class SongEntity(
     val album: String,
     val albumArt: String,
     val uri: Uri,
-    val duration: Long
+    val duration: Long,
+    val timestamp: Long
 )

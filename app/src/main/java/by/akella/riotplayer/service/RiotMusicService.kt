@@ -333,14 +333,18 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             val musicTabsType =
                 extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicTabs
 
-            if (musicTabsType == musicType) {
+            if (musicTabsType == musicType && queueManager.getCurrentSong()?.id == mediaId) {
                 playSong()
             } else {
-                musicType = musicTabsType
                 mediaId?.let {
                     try {
                         val songModel = songsRepository.getSong(mediaId)
-                        prepareQueue(songModel, extras)
+
+                        if (musicTabsType != musicType) {
+                            musicType = musicTabsType
+                            prepareQueue(songModel, extras)
+                        }
+
                         val mediaMetadata = songModel.toMediaMetadata()
                         playSong(mediaMetadata)
                     } catch (e: NoSuchElementException) {

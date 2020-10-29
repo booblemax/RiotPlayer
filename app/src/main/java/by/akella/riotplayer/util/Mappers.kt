@@ -11,7 +11,16 @@ import com.google.android.exoplayer2.upstream.DataSource
 
 fun SongModel.toEntity(): SongEntity {
     return SongEntity(
-        id, title, artistId, artist, albumId, album, albumArt, uri, duration
+        id,
+        title,
+        artistId,
+        artist,
+        albumId,
+        album,
+        albumArt,
+        uri,
+        duration,
+        System.currentTimeMillis()
     )
 }
 
