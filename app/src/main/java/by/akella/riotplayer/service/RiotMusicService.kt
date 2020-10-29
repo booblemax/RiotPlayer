@@ -242,6 +242,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
+                Player.STATE_ENDED -> queueManager.nextSong()?.let { playSong(it) }
                 else -> notificationManager.hideNotification()
             }
         }

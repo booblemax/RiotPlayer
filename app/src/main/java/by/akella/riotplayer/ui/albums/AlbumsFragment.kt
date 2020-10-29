@@ -21,7 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class AlbumsFragment : BaseFragment() {
 
-    val viewModel: AlbumsViewModel by viewModels()
+    private val viewModel: AlbumsViewModel by viewModels()
     private lateinit var binding: ItemsFragmentBinding
     private lateinit var adapter: AlbumAdapter
 

@@ -15,6 +15,15 @@ class QueueManager @Inject constructor() {
         }
     }
 
+    fun nextSong(): MediaMetadataCompat? {
+        return if (currentIndex + 1 < playingQueue.size) {
+            setCurrentIndex(currentIndex + 1)
+            playingQueue[currentIndex]
+        } else {
+            null
+        }
+    }
+
     fun setCurrentQueueItem(mediaId: String) {
         val index = playingQueue.indexOfFirst { it.id == mediaId }
         setCurrentIndex(index)

@@ -36,7 +36,7 @@ class PlayerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
-            warn("$state")
+            warn(state.toString())
             with(state) {
                 song?.let {
                     if (!isSameSong) {
@@ -55,9 +55,13 @@ class PlayerFragment : BaseFragment() {
                         binding.progressBar.valueFrom = 0f
                     }
 
-                    binding.progressBar.value = (currentPlayPosition / TimeUtils.MILLIS).toFloat()
+                    binding.progressBar.value =
+                        (currentPlayPosition / TimeUtils.MILLIS).toFloat()
                     binding.currentPlayTime.text =
-                        TimeUtils.convertMillisToShortTime(requireContext(), currentPlayPosition)
+                        TimeUtils.convertMillisToShortTime(
+                            requireContext(),
+                            currentPlayPosition
+                        )
                 }
                 binding.playPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause

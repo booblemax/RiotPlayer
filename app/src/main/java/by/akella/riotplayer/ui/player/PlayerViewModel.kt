@@ -26,6 +26,8 @@ import com.babylon.orbit2.reduce
 import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
 import by.akella.riotplayer.dispatchers.DispatcherProvider
+import by.akella.riotplayer.util.info
+import by.akella.riotplayer.util.stateName
 
 class PlayerViewModel @ViewModelInject constructor(
     dispatcherProvider: DispatcherProvider,
@@ -58,7 +60,7 @@ class PlayerViewModel @ViewModelInject constructor(
                         }
                     }.reduce {
                         val isSameSong = state.song?.id == event?.id
-                        state.copy(song = event, isSameSong = isSameSong)
+                        state.copy(song = event, isSameSong = isSameSong, currentPlayPosition = 0)
                     }
                 }
             }
@@ -68,6 +70,7 @@ class PlayerViewModel @ViewModelInject constructor(
                 orbit {
                     transform {
                         this@PlayerViewModel.playbackState = playbackState
+                        info(playbackState.stateName)
                         playbackState.isPlaying
                     }.reduce {
                         state.copy(isPlaying = event)
@@ -128,9 +131,15 @@ class PlayerViewModel @ViewModelInject constructor(
         {
             val playPosition = playbackState.currentPlayBackPosition
             if (playPosition != container.currentState.currentPlayPosition &&
-                playbackState.isPlaying) {
+                playbackState.isPlaying
+            ) {
                 orbit {
-                    transform { playPosition }.reduce { state.copy(currentPlayPosition = playPosition) }
+                    transform { playPosition }.reduce {
+                        val duration = state.song?.duration ?: 0
+                        state.copy(
+                            currentPlayPosition = if (playPosition > duration) duration else playPosition
+                        )
+                    }
                 }
             }
             if (needUpdateDuration) checkDuration()
@@ -149,6 +158,6 @@ class PlayerViewModel @ViewModelInject constructor(
     }
 
     companion object {
-        private const val POSITION_UPDATE_INTERVAL_MILLIS = 300L
+        private const val POSITION_UPDATE_INTERVAL_MILLIS = 500L
     }
 }
