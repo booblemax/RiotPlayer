@@ -36,7 +36,7 @@ class AlbumsFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        adapter = AlbumAdapter(SafeClickListener { navigateToAlbumDetails(it) })
+        adapter = AlbumAdapter(SafeClickListener { it?.let { navigateToAlbumDetails(it) } })
         with(binding) {
             items.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
             items.addItemDecoration(GridItemDecoration())

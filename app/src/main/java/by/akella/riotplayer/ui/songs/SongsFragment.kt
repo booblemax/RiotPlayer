@@ -15,11 +15,9 @@ import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
-import by.akella.riotplayer.ui.main.state.MusicTabs
-import by.akella.riotplayer.util.animateVisible
+import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.gone
-import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.snack
 import by.akella.riotplayer.util.visible
 import com.babylon.orbit2.livedata.sideEffect
@@ -37,7 +35,7 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     override fun onResume() {
         super.onResume()
         val songType = viewModel.container.currentState.songType
-        if (songType == MusicTabs.RECENTS) {
+        if (songType == MusicType.RECENTS) {
             viewModel.loadSongs(songType)
         }
     }
@@ -55,7 +53,7 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = SongsAdapter(SafeClickListener { navigateToPlayer(it) })
+        adapter = SongsAdapter(SafeClickListener { it?.let { navigateToPlayer(it) } })
         with(binding.items) {
             addItemDecoration(BottomOffsetItemDecoration())
             layoutManager = LinearLayoutManager(requireContext())
@@ -77,7 +75,7 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
             } else {
                 binding.progress.gone()
 
-                if (viewModel.container.currentState.songType == MusicTabs.RECENTS &&
+                if (viewModel.container.currentState.songType == MusicType.RECENTS &&
                     songs.isNotEmpty()) {
                     binding.clearHistory.visible()
                 }
@@ -111,8 +109,8 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
             )
         ) {
             val songTypePosition = arguments?.getInt(ARG_TAB_TYPE)
-            viewModel.loadSongs(songTypePosition?.let { MusicTabs.values()[it] }
-                ?: MusicTabs.ALL_SONGS)
+            viewModel.loadSongs(songTypePosition?.let { MusicType.values()[it] }
+                ?: MusicType.ALL_SONGS)
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -146,7 +144,7 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         const val REQUEST_INTERNAL_STORAGE = 1000
         const val ARG_TAB_TYPE = "arg_tab_type"
 
-        fun create(tabType: MusicTabs): Fragment = SongsFragment().apply {
+        fun create(tabType: MusicType): Fragment = SongsFragment().apply {
             arguments = Bundle().apply {
                 putInt(ARG_TAB_TYPE, tabType.ordinal)
             }

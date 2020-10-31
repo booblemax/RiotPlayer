@@ -9,14 +9,12 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.AlbumDetailsFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.base.OffsetItemDecoration
 import by.akella.riotplayer.ui.custom.SafeClickListener
-import by.akella.riotplayer.ui.main.state.MusicTabs
-import by.akella.riotplayer.ui.songs.BottomOffsetItemDecoration
+import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.ui.songs.SongsAdapter
 import by.akella.riotplayer.util.TimeUtils
 import by.akella.riotplayer.util.gone
@@ -52,7 +50,7 @@ class AlbumDetailsFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        adapter = SongsAdapter(SafeClickListener { navigateToPlayer(it.id) })
+        adapter = SongsAdapter(SafeClickListener { it?.let { navigateToPlayer(it.id) } })
         with(binding.songs) {
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
@@ -113,7 +111,7 @@ class AlbumDetailsFragment : BaseFragment() {
     private fun navigateToPlayer(mediaId: String) {
         findNavController().navigate(
             AlbumDetailsFragmentDirections.actionAlbumDetailsFragmentToPlayerFragment(
-                mediaId, MusicTabs.ALBUMS.ordinal
+                mediaId, MusicType.ALBUMS.ordinal
             )
         )
     }

@@ -5,7 +5,7 @@ import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
-import by.akella.riotplayer.ui.main.state.MusicTabs
+import by.akella.riotplayer.ui.main.state.MusicType
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.coroutines.transformSuspend
@@ -26,7 +26,7 @@ class SongsViewModel @ViewModelInject constructor(
         }
     }
 
-    fun loadSongs(songType: MusicTabs? = null) = orbit {
+    fun loadSongs(songType: MusicType? = null) = orbit {
         transformSuspend {
             loadSongByType(songType).map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
         }.reduce {
@@ -45,9 +45,9 @@ class SongsViewModel @ViewModelInject constructor(
         }
     }
 
-    private suspend fun loadSongByType(songType: MusicTabs? = null) = when (songType) {
-        MusicTabs.ALL_SONGS -> songsRepository.getAllSongs()
-        MusicTabs.RECENTS -> songsRepository.getRecentSongs()
+    private suspend fun loadSongByType(songType: MusicType? = null) = when (songType) {
+        MusicType.ALL_SONGS -> songsRepository.getAllSongs()
+        MusicType.RECENTS -> songsRepository.getRecentSongs()
         else -> listOf()
     }
 }

@@ -4,6 +4,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import by.akella.riotplayer.db.SongEntity
 import by.akella.riotplayer.repository.songs.SongModel
+import by.akella.riotplayer.ui.base.model.SongUiModel
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -56,6 +57,16 @@ fun List<SongModel>.toMediaMetadata(): List<MediaMetadataCompat> {
             duration = song.duration
         }.build()
     }
+}
+
+fun MediaMetadataCompat.toSongUiModel(): SongUiModel {
+    return SongUiModel(
+        id ?: "",
+        title ?: "",
+        artist ?: "",
+        albumArtUri.toString(),
+        duration
+    )
 }
 
 /**

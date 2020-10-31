@@ -21,7 +21,7 @@ import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.notification.RiotNotificationManager
 import by.akella.riotplayer.repository.songs.SongModel
 import by.akella.riotplayer.repository.songs.SongsRepository
-import by.akella.riotplayer.ui.main.state.MusicTabs
+import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
@@ -58,7 +58,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var becomeNoisyReceiver: BecomeNoisyReceiver
     private val queueManager = QueueManager()
-    private var musicType: MusicTabs? = null
+    private var musicType: MusicType? = null
 
     private val myAudioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -213,12 +213,12 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         mediaSession.setPlaybackState(stateBuilder.build())
     }
 
-    private fun prepareQueue(songModel: SongModel, extra: Bundle? = null) {
+    private fun prepareQueue(songModel: SongModel) {
         serviceScope.launch(dispatcherProvider.io()) {
             val songs = when (musicType) {
-                MusicTabs.ALBUMS -> songsRepository.getSongsByAlbum(songModel.albumId.toString())
-                MusicTabs.RECENTS -> songsRepository.getRecentSongs()
-                MusicTabs.ALL_SONGS -> songsRepository.getAllSongs()
+                MusicType.ALBUMS -> songsRepository.getSongsByAlbum(songModel.albumId.toString())
+                MusicType.RECENTS -> songsRepository.getRecentSongs()
+                MusicType.ALL_SONGS -> songsRepository.getAllSongs()
                 else -> emptyList()
             }
             queueManager.setQueue(songs.toMediaMetadata(), songModel.id)
@@ -331,7 +331,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             info("onPlayFromMediaId -> $mediaId")
 
             val musicTabsType =
-                extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicTabs
+                extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicType
 
             if (musicTabsType == musicType && queueManager.getCurrentSong()?.id == mediaId) {
                 playSong()
@@ -342,7 +342,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
                         if (musicTabsType != musicType) {
                             musicType = musicTabsType
-                            prepareQueue(songModel, extras)
+                            prepareQueue(songModel)
                         }
 
                         val mediaMetadata = songModel.toMediaMetadata()

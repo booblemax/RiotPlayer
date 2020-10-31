@@ -15,6 +15,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import by.akella.riotplayer.R
+import by.akella.riotplayer.ui.custom.SafeClickListener
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 
@@ -66,6 +67,10 @@ fun View.gone() {
 
 fun View.animateGone() {
     animate().alpha(1f).withEndAction { visible() }.start()
+}
+
+fun <T : Any?> View.onSafeClick(item: T? = null, listener: SafeClickListener<T>) {
+    setOnClickListener { listener.invoke(item) }
 }
 
 fun Fragment.waitForTransition(targetView: View) {

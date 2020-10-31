@@ -29,7 +29,7 @@
         <item name="cornerRadius">20dp</item>
     </style>
 
-    <style name="Progress">
+    <style name="Progress" parent="Widget.MaterialComponents.Slider">
         <item name="trackColorActive">@color/colorAccent</item>
         <item name="trackColorInactive">@color/pink_light</item>
         <item name="thumbColor">@color/colorAccent</item>

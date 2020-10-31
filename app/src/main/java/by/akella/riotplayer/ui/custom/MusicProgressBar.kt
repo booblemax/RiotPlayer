@@ -52,6 +52,10 @@ class MusicProgressBar @JvmOverloads constructor(
 
     private fun getInterval(): Int = valueTo - valueFrom
 
+    fun disableTouch() {
+        setOnTouchListener { _, _ -> true }
+    }
+
     companion object {
         private const val DIVIDEND = 100.0
     }

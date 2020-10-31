@@ -24,17 +24,12 @@ class QueueManager @Inject constructor() {
         }
     }
 
-    fun setCurrentQueueItem(mediaId: String) {
-        val index = playingQueue.indexOfFirst { it.id == mediaId }
-        setCurrentIndex(index)
-    }
-
     fun skipPositions(count: Int) {
         var index = currentIndex + count
         if (index < 0 || playingQueue.isEmpty()) {
             index = 0
         }
-        if (index > playingQueue.size) {
+        if (index >= playingQueue.size) {
             index %= playingQueue.size
         }
 

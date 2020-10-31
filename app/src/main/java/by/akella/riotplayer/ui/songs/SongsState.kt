@@ -1,10 +1,10 @@
 package by.akella.riotplayer.ui.songs
 
 import by.akella.riotplayer.ui.base.model.SongUiModel
-import by.akella.riotplayer.ui.main.state.MusicTabs
+import by.akella.riotplayer.ui.main.state.MusicType
 
 data class SongsState(
-    val songType: MusicTabs? = null,
+    val songType: MusicType? = null,
     val loading: Boolean = true,
     val songs: List<SongUiModel> = listOf()
 ) {

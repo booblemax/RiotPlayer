@@ -18,8 +18,6 @@ import by.akella.riotplayer.util.artist
 import by.akella.riotplayer.util.albumArtUri
 import by.akella.riotplayer.util.duration
 import by.akella.riotplayer.util.isPlaying
-import by.akella.riotplayer.util.isPrepared
-import by.akella.riotplayer.util.isPlayEnabled
 import by.akella.riotplayer.util.currentPlayBackPosition
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
@@ -27,9 +25,10 @@ import com.babylon.orbit2.reduce
 import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
 import by.akella.riotplayer.dispatchers.DispatcherProvider
-import by.akella.riotplayer.ui.main.state.MusicTabs
+import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.stateName
+import by.akella.riotplayer.util.toSongUiModel
 
 class PlayerViewModel @ViewModelInject constructor(
     dispatcherProvider: DispatcherProvider,
@@ -51,17 +50,9 @@ class PlayerViewModel @ViewModelInject constructor(
             nowPlayingSongObserver = Observer { media ->
                 orbit {
                     transform {
-                        media.id?.let {
-                            SongUiModel(
-                                it,
-                                media.title ?: "",
-                                media.artist ?: "",
-                                media.albumArtUri.toString(),
-                                media.duration
-                            )
-                        }
+                        media.toSongUiModel()
                     }.reduce {
-                        val isSameSong = state.song?.id == event?.id
+                        val isSameSong = state.song?.id == event.id
                         state.copy(song = event, isSameSong = isSameSong, currentPlayPosition = 0)
                     }
                 }
@@ -72,7 +63,6 @@ class PlayerViewModel @ViewModelInject constructor(
                 orbit {
                     transform {
                         this@PlayerViewModel.playbackState = playbackState
-                        info(playbackState.stateName)
                         playbackState.isPlaying
                     }.reduce {
                         state.copy(isPlaying = event)
@@ -98,7 +88,7 @@ class PlayerViewModel @ViewModelInject constructor(
         }
     }
 
-    fun play(mediaId: String, musicType: MusicTabs? = null) {
+    fun play(mediaId: String, musicType: MusicType? = null) {
         riotMediaController.play(
             mediaId,
             bundleOf(RiotMediaController.ARG_MUSIC_TYPE to musicType)
@@ -125,8 +115,7 @@ class PlayerViewModel @ViewModelInject constructor(
         {
             val playPosition = playbackState.currentPlayBackPosition
             if (playPosition != container.currentState.currentPlayPosition &&
-                playbackState.isPlaying
-            ) {
+                playbackState.isPlaying) {
                 orbit {
                     transform { playPosition }.reduce {
                         val duration = state.song?.duration ?: 0

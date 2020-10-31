@@ -8,10 +8,9 @@ import androidx.fragment.app.viewModels
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
-import by.akella.riotplayer.ui.main.state.MusicTabs
+import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.TimeUtils
 import by.akella.riotplayer.util.loadAlbumIcon
-import by.akella.riotplayer.util.warn
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,7 +36,6 @@ class PlayerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
-            warn(state.toString())
             with(state) {
                 song?.let {
                     if (!isSameSong) {
@@ -50,14 +48,13 @@ class PlayerFragment : BaseFragment() {
                         binding.allPlayTime.text =
                             TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
 
-                        val duration = (it.duration / TimeUtils.MILLIS).toFloat()
-                        binding.progressBar.valueTo =
-                            if (duration == 0f) DEFAULT_PROGRESS_END_POSITION else duration
-                        binding.progressBar.valueFrom = 0f
+                        val duration = (it.duration / TimeUtils.MILLIS).toInt()
+                        binding.progressBar.valueTo = duration
+                        binding.progressBar.valueFrom = 0
                     }
 
                     binding.progressBar.value =
-                        (currentPlayPosition / TimeUtils.MILLIS).toFloat()
+                        (currentPlayPosition / TimeUtils.MILLIS).toInt()
                     binding.currentPlayTime.text =
                         TimeUtils.convertMillisToShortTime(
                             requireContext(),
@@ -71,10 +68,6 @@ class PlayerFragment : BaseFragment() {
             }
         }
 
-        viewModel.play(args.mediaId, MusicTabs.values()[args.musicType])
-    }
-
-    companion object {
-        private const val DEFAULT_PROGRESS_END_POSITION = 0.1f
+        viewModel.play(args.mediaId, MusicType.values()[args.musicType])
     }
 }
