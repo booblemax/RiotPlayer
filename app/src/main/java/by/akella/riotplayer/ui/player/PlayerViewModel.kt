@@ -78,16 +78,22 @@ class PlayerViewModel @ViewModelInject constructor(
     fun onPlayPauseClicked() {
         riotMediaController.playbackState.value?.let {
             if (it.isPlaying) pause()
-            else play(container.currentState.song?.id ?: "")
+            else play(
+                container.currentState.song?.id ?: "",
+                container.currentState.musicType
+            )
         }
     }
 
-    fun play(mediaId: String, musicType: MusicType? = null) {
-        riotMediaController.play(
-            mediaId,
-            bundleOf(RiotMediaController.ARG_MUSIC_TYPE to musicType)
-        )
+    fun play(mediaId: String, musicType: MusicType? = null) = orbit {
+        transform {
+            riotMediaController.play(
+                mediaId,
+                bundleOf(RiotMediaController.ARG_MUSIC_TYPE to musicType)
+            )
+        }.reduce { state.copy(musicType = musicType) }
     }
+
 
     fun pause() {
         riotMediaController.pause()
