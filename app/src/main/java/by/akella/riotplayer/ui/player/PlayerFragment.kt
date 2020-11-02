@@ -10,6 +10,7 @@ import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.TimeUtils
+import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.loadAlbumIcon
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,6 +37,7 @@ class PlayerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
+            info(state.toString())
             with(state) {
                 song?.let {
                     if (!isSameSong) {
@@ -48,13 +50,12 @@ class PlayerFragment : BaseFragment() {
                         binding.allPlayTime.text =
                             TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
 
-                        val duration = (it.duration / TimeUtils.MILLIS).toInt()
+                        val duration = it.duration / TimeUtils.MILLIS
                         binding.progressBar.valueTo = duration
                         binding.progressBar.valueFrom = 0
                     }
 
-                    binding.progressBar.value =
-                        (currentPlayPosition / TimeUtils.MILLIS).toInt()
+                    binding.progressBar.value = currentPlayPosition / TimeUtils.MILLIS
                     binding.currentPlayTime.text =
                         TimeUtils.convertMillisToShortTime(
                             requireContext(),

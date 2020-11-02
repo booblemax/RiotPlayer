@@ -39,20 +39,22 @@ class PlayerController(
     }
 
     fun playSong(media: MediaMetadataCompat? = null) {
-        playbackStateHelper.applyPlayState()
+        var playingPosition = player.currentPosition
 
         media?.let {
+            playingPosition = 0L
             val mediaSource = it.toMediaSource(dataFactory)
             player.setMediaSource(mediaSource)
             player.prepare()
         }
 
+        playbackStateHelper.applyPlayState(playingPosition)
         player.playWhenReady = true
     }
 
     fun pause() {
         if (player.isPlaying) {
-            playbackStateHelper.applyPauseState()
+            playbackStateHelper.applyPauseState(player.currentPosition)
             player.pause()
         }
     }
@@ -68,6 +70,7 @@ class PlayerController(
 
     fun seekTo(pos: Long) {
         player.seekTo(pos)
+        playbackStateHelper.applyPlayState(player.currentPosition)
     }
 
     fun freePlayer() {

@@ -59,15 +59,14 @@ class PlayerMiniFragment : BaseFragment() {
                         it.albumArtPath,
                         R.drawable.ic_musical_note
                     )
-                    val duration = (it.duration / TimeUtils.MILLIS).toInt()
+                    val duration = it.duration / TimeUtils.MILLIS
                     if (binding.progress.valueTo != duration) {
                         binding.progress.valueTo = duration
                         binding.progress.valueFrom = 0
                     }
                 }
 
-                binding.progress.value =
-                    (currentPlayPosition / TimeUtils.MILLIS).toInt()
+                binding.progress.value = currentPlayPosition / TimeUtils.MILLIS
 
                 binding.playPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause

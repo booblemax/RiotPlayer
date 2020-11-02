@@ -77,9 +77,9 @@ class RiotMediaController @Inject constructor(
         }
     }
 
-    fun seekTo(pos: Int) {
+    fun seekTo(pos: Long) {
         if (isConnected.value == true) {
-            transportControls.seekTo(pos.toLong())
+            transportControls.seekTo(pos)
         }
     }
 

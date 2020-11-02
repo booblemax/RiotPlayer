@@ -14,24 +14,24 @@ class MusicProgressBar @JvmOverloads constructor(
     defStyleAttr: Int = R.attr.seekBarStyle
 ) : AppCompatSeekBar(context, attrs, defStyleAttr) {
 
-    var onTouchEnds: (Int) -> Unit = {}
+    var onTouchEnds: (Long) -> Unit = {}
 
-    var valueFrom: Int = -1
+    var valueFrom: Long = -1
         set(value) {
             if (value > valueTo) throw IllegalArgumentException("valueFrom must be less than valueTo")
             field = value
         }
 
-    var valueTo: Int = 0
+    var valueTo: Long = 0
 
-    var value: Int = 0
+    var value: Long = 0
         set(value) {
             if (!isTrackingStarted) {
                 progress = ceil(value * DIVIDEND / getInterval()).toInt()
             }
             field = value
         }
-        get() = ceil(progress * getInterval() / DIVIDEND).toInt()
+        get() = ceil(progress * getInterval() / DIVIDEND).toLong()
 
     private var isTrackingStarted = false
 
@@ -50,7 +50,7 @@ class MusicProgressBar @JvmOverloads constructor(
         })
     }
 
-    private fun getInterval(): Int = valueTo - valueFrom
+    private fun getInterval(): Long = valueTo - valueFrom
 
     fun disableTouch() {
         setOnTouchListener { _, _ -> true }

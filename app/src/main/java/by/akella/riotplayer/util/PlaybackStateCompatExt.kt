@@ -48,6 +48,10 @@ inline val PlaybackStateCompat.isSkipToNextEnabled
 inline val PlaybackStateCompat.isSkipToPreviousEnabled
     get() = actions and PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS != 0L
 
+inline val PlaybackStateCompat.isSkipState
+    get() = (state == PlaybackStateCompat.STATE_SKIPPING_TO_NEXT) ||
+                (state == PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS)
+
 inline val PlaybackStateCompat.stateName
     get() = when (state) {
         PlaybackStateCompat.STATE_NONE -> "STATE_NONE"

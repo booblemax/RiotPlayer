@@ -10,13 +10,7 @@ import androidx.lifecycle.Observer
 import by.akella.riotplayer.media.EMPTY_PLAYBACK_STATE
 import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.ui.base.BaseViewModel
-import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.player.state.PlayerState
-import by.akella.riotplayer.util.id
-import by.akella.riotplayer.util.title
-import by.akella.riotplayer.util.artist
-import by.akella.riotplayer.util.albumArtUri
-import by.akella.riotplayer.util.duration
 import by.akella.riotplayer.util.isPlaying
 import by.akella.riotplayer.util.currentPlayBackPosition
 import com.babylon.orbit2.Container
@@ -26,8 +20,7 @@ import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.ui.main.state.MusicType
-import by.akella.riotplayer.util.info
-import by.akella.riotplayer.util.stateName
+import by.akella.riotplayer.util.isSkipState
 import by.akella.riotplayer.util.toSongUiModel
 
 class PlayerViewModel @ViewModelInject constructor(
@@ -42,6 +35,7 @@ class PlayerViewModel @ViewModelInject constructor(
     private val playbackStateObserver: Observer<PlaybackStateCompat>
     private val connectionObserver: Observer<Boolean>
     private var playbackState = EMPTY_PLAYBACK_STATE
+    private var seekToValue = DEFAULT_SEEK_TO_VALUE
 
     override val container: Container<PlayerState, Nothing> = container(PlayerState())
 
@@ -107,21 +101,21 @@ class PlayerViewModel @ViewModelInject constructor(
         riotMediaController.prev()
     }
 
-    fun seekTo(pos: Int) {
+    fun seekTo(pos: Long) {
+        seekToValue = pos
         riotMediaController.seekTo(pos)
     }
 
     private fun checkDuration(): Boolean = handler.postDelayed(
         {
             val playPosition = playbackState.currentPlayBackPosition
-            if (playPosition != container.currentState.currentPlayPosition &&
-                playbackState.isPlaying) {
+            resetSeekToPositionIfCan(playPosition)
+            if (canApplyNewPosition(playPosition) && isValidState()) {
                 orbit {
-                    transform { playPosition }.reduce {
-                        val duration = state.song?.duration ?: 0
-                        state.copy(
-                            currentPlayPosition = if (playPosition > duration) duration else playPosition
-                        )
+                    transform {
+                        getValidPosition(state, playPosition)
+                    }.reduce {
+                        state.copy(currentPlayPosition = playPosition)
                     }
                 }
             }
@@ -129,6 +123,28 @@ class PlayerViewModel @ViewModelInject constructor(
         },
         POSITION_UPDATE_INTERVAL_MILLIS
     )
+
+    private fun canApplyNewPosition(playPosition: Long) =
+        playPosition != container.currentState.currentPlayPosition &&
+                playPosition > seekToValue
+
+    private fun isValidState() =
+        playbackState.isPlaying && !playbackState.isSkipState
+
+    private fun getValidPosition(state: PlayerState, playPosition: Long): Long {
+        val duration = state.song?.duration ?: 0
+        return when {
+            playPosition > duration -> duration
+            playPosition < seekToValue -> seekToValue
+            else -> playPosition
+        }
+    }
+
+    private fun resetSeekToPositionIfCan(playPosition: Long) {
+        if (playPosition >= seekToValue) {
+            seekToValue = DEFAULT_SEEK_TO_VALUE
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
@@ -141,6 +157,7 @@ class PlayerViewModel @ViewModelInject constructor(
     }
 
     companion object {
-        private const val POSITION_UPDATE_INTERVAL_MILLIS = 500L
+        private const val POSITION_UPDATE_INTERVAL_MILLIS = 300L
+        private const val DEFAULT_SEEK_TO_VALUE = -1L
     }
 }

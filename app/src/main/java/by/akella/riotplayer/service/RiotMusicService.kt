@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -137,9 +138,11 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
     }
 
-    private fun saveSongIntoHistory(songId: String) {
-        serviceScope.launch(dispatcherProvider.io()) {
-            songsRepository.insertSongToRecent(songId)
+    private fun saveSongIntoHistory(songId: String?) {
+        songId?.let {
+            serviceScope.launch(dispatcherProvider.io()) {
+                songsRepository.insertSongToRecent(songId)
+            }
         }
     }
 
@@ -152,17 +155,14 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                     notificationManager.showNotification(playerController.player)
                     if (playbackState == Player.STATE_READY) {
                         if (playWhenReady) {
-                            playbackStateHelper.applyPlayState()
-                        } else {
-                            playbackStateHelper.applyPauseState()
                             stopForeground(false)
                         }
                     }
                 }
-                Player.STATE_ENDED -> queueManager.nextSong()?.let {
-                    mediaSession.setMetadata(it)
-                    it.id?.let { id -> saveSongIntoHistory(id) }
-                    playerController.playSong(it)
+                Player.STATE_ENDED -> queueManager.nextSong()?.let { media ->
+                    mediaSession.setMetadata(media)
+                    saveSongIntoHistory(media.id)
+                    playerController.playSong(media)
                 }
                 else -> notificationManager.hideNotification()
             }
@@ -220,14 +220,21 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
         override fun onSkipToNext() {
             info("MediaSessionCallback onSkipToNext")
-            queueManager.skipPositions(1)
-            playerController.playSong(queueManager.getCurrentSong())
+            playbackStateHelper.applyStopState()
+            skipAndPlay(1)
         }
 
         override fun onSkipToPrevious() {
             info("MediaSessionCallback onSkipToPrevious")
-            queueManager.skipPositions(-1)
-            playerController.playSong(queueManager.getCurrentSong())
+            skipAndPlay(-1)
+        }
+
+        private fun skipAndPlay(count: Int) {
+            queueManager.skipPositions(count)?.let { media ->
+                mediaSession.setMetadata(media)
+                saveSongIntoHistory(media.id)
+                playerController.playSong(media)
+            }
         }
 
         override fun onStop() {
@@ -261,6 +268,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                         }
 
                         val mediaMetadata = songModel.toMediaMetadata()
+                        mediaSession.setMetadata(mediaMetadata)
                         playerController.playSong(mediaMetadata)
                     } catch (e: NoSuchElementException) {
                         error(e.message.toString())

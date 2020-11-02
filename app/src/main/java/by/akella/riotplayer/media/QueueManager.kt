@@ -24,7 +24,7 @@ class QueueManager @Inject constructor() {
         }
     }
 
-    fun skipPositions(count: Int) {
+    fun skipPositions(count: Int): MediaMetadataCompat? {
         var index = currentIndex + count
         if (index < 0 || playingQueue.isEmpty()) {
             index = 0
@@ -34,6 +34,7 @@ class QueueManager @Inject constructor() {
         }
 
         setCurrentIndex(index)
+        return getCurrentSong()
     }
 
     fun getCurrentSong(): MediaMetadataCompat? = playingQueue.getOrNull(currentIndex)
