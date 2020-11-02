@@ -51,8 +51,8 @@ fun List<SongModel>.toMediaMetadata(): List<MediaMetadataCompat> {
             id = song.id
             title = song.title
             artist = song.artist
-            album = song.album
             mediaUri = song.uri.toString()
+            album = song.album
             albumArtUri = song.albumArt
             duration = song.duration
         }.build()

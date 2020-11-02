@@ -23,6 +23,7 @@ import by.akella.riotplayer.notification.RiotNotificationManager
 import by.akella.riotplayer.repository.songs.SongModel
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.ui.main.state.MusicType
+import by.akella.riotplayer.util.album
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
@@ -255,16 +256,21 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                 extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicType
 
             if (musicType == this@RiotMusicService.musicType &&
-                queueManager.getCurrentSong()?.id == mediaId) {
+                queueManager.getCurrentSong()?.id == mediaId
+            ) {
                 playerController.playSong()
             } else {
                 mediaId?.let {
                     try {
                         val songModel = songsRepository.getSong(mediaId)
+                        val currentSong = queueManager.getCurrentSong()
 
-                        if (musicType != this@RiotMusicService.musicType) {
+                        if (musicType != this@RiotMusicService.musicType ||
+                            currentSong?.album != songModel.album) {
                             this@RiotMusicService.musicType = musicType
                             prepareQueue(songModel)
+                        } else {
+                            queueManager.setCurrentSong(it)
                         }
 
                         val mediaMetadata = songModel.toMediaMetadata()

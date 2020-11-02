@@ -19,6 +19,7 @@ import by.akella.riotplayer.ui.songs.SongsAdapter
 import by.akella.riotplayer.util.TimeUtils
 import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.info
+import by.akella.riotplayer.util.onSafeClick
 import by.akella.riotplayer.util.visible
 import com.babylon.orbit2.livedata.state
 import com.bumptech.glide.Glide
@@ -46,6 +47,9 @@ class AlbumDetailsFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = AlbumDetailsFragmentBinding.inflate(inflater, container, false)
+        binding.fabPlay.onSafeClick(null, SafeClickListener {
+            adapter.currentList.firstOrNull()?.let { navigateToPlayer(it.id) }
+        })
         return binding.root
     }
 
