@@ -6,9 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -16,6 +14,8 @@ import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.BecomeNoisyReceiver
+import by.akella.riotplayer.media.PlayerController
+import by.akella.riotplayer.media.PlaybackStateHelper
 import by.akella.riotplayer.media.QueueManager
 import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.notification.RiotNotificationManager
@@ -26,15 +26,9 @@ import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.toMediaMetadata
-import by.akella.riotplayer.util.toMediaSource
-import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -53,41 +47,21 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     private val serviceJob = SupervisorJob()
     private lateinit var serviceScope: CoroutineScope
 
+    private lateinit var playbackStateHelper: PlaybackStateHelper
+    private lateinit var playerController: PlayerController
     private lateinit var notificationManager: RiotNotificationManager
     private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var stateBuilder: PlaybackStateCompat.Builder
     private lateinit var becomeNoisyReceiver: BecomeNoisyReceiver
+
     private val queueManager = QueueManager()
     private var musicType: MusicType? = null
 
-    private val myAudioAttributes = AudioAttributes.Builder()
-        .setContentType(C.CONTENT_TYPE_MUSIC)
-        .setUsage(C.USAGE_MEDIA)
-        .build()
-
     private val playerListener = PlayerEventListener()
-
-    private val player: ExoPlayer by lazy {
-        SimpleExoPlayer.Builder(this).build().apply {
-            setAudioAttributes(myAudioAttributes, true)
-            setHandleAudioBecomingNoisy(true)
-            addListener(playerListener)
-        }
-    }
-
-    private val dataFactory: DefaultDataSourceFactory by lazy {
-        DefaultDataSourceFactory(
-            this,
-            USER_AGENT
-        )
-    }
 
     private var isForegroundService = false
 
     override fun onCreate() {
         super.onCreate()
-        info("RiotMusicService onCreate")
-
         serviceScope = CoroutineScope(dispatcherProvider.main() + serviceJob)
 
         val sessionActivityPendingIntent =
@@ -95,7 +69,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                 PendingIntent.getActivity(this, 0, sessionIntent, 0)
             }
 
-        stateBuilder = PlaybackStateCompat.Builder()
         mediaSession = MediaSessionCompat(
             this,
             MY_MEDIA_ID,
@@ -112,27 +85,19 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             setCallback(MediaSessionCallback())
             isActive = true
         }
-
-        stateBuilder.setActions(
-            PlaybackStateCompat.ACTION_PLAY or
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                    PlaybackStateCompat.ACTION_SEEK_TO or
-                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-        )
-
         sessionToken = mediaSession.sessionToken
 
-        becomeNoisyReceiver = BecomeNoisyReceiver(this, mediaSession.sessionToken)
+        playbackStateHelper = PlaybackStateHelper(mediaSession)
+        playerController = PlayerController(this, playbackStateHelper, playerListener)
 
+        becomeNoisyReceiver = BecomeNoisyReceiver(this, mediaSession.sessionToken)
         notificationManager = RiotNotificationManager(
             this,
             dispatcherProvider,
             mediaSession.sessionToken,
             PlayerNotificationListener()
         )
-
-        notificationManager.showNotification(player)
+        notificationManager.showNotification(playerController.player)
     }
 
     override fun onDestroy() {
@@ -142,11 +107,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
 
         serviceJob.cancel()
-
-        player.run {
-            removeListener(playerListener)
-            release()
-        }
+        playerController.freePlayer()
     }
 
     override fun onGetRoot(
@@ -162,55 +123,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         result.sendResult(null)
-    }
-
-    private fun playSong(media: MediaMetadataCompat? = null) {
-        applyPlayState()
-
-        media?.let {
-            media.id?.let { id -> saveSongIntoHistory(id) }
-            mediaSession.setMetadata(it)
-            val mediaSource = it.toMediaSource(dataFactory)
-            player.setMediaSource(mediaSource)
-            player.prepare()
-        }
-
-        player.playWhenReady = true
-    }
-
-    private fun pause() {
-        if (player.isPlaying) {
-            applyPauseState()
-            player.pause()
-        }
-    }
-
-    private fun stop() {
-        if (player.isPlaying) {
-            pause()
-        }
-
-        applyStopState()
-        player.stop(true)
-    }
-
-    private fun seekTo(pos: Long) {
-        player.seekTo(pos)
-    }
-
-    private fun applyPlayState() {
-        stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, player.currentPosition, 1f)
-        mediaSession.setPlaybackState(stateBuilder.build())
-    }
-
-    private fun applyPauseState() {
-        stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, player.currentPosition, 1f)
-        mediaSession.setPlaybackState(stateBuilder.build())
-    }
-
-    private fun applyStopState() {
-        stateBuilder.setState(PlaybackStateCompat.STATE_STOPPED, 0, 1f)
-        mediaSession.setPlaybackState(stateBuilder.build())
     }
 
     private fun prepareQueue(songModel: SongModel) {
@@ -237,19 +149,21 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
-                    notificationManager.showNotification(player)
+                    notificationManager.showNotification(playerController.player)
                     if (playbackState == Player.STATE_READY) {
-                        // todo store recent played song into preferences
-
                         if (playWhenReady) {
-                            applyPlayState()
+                            playbackStateHelper.applyPlayState()
                         } else {
-                            applyPauseState()
+                            playbackStateHelper.applyPauseState()
                             stopForeground(false)
                         }
                     }
                 }
-                Player.STATE_ENDED -> queueManager.nextSong()?.let { playSong(it) }
+                Player.STATE_ENDED -> queueManager.nextSong()?.let {
+                    mediaSession.setMetadata(it)
+                    it.id?.let { id -> saveSongIntoHistory(id) }
+                    playerController.playSong(it)
+                }
                 else -> notificationManager.hideNotification()
             }
         }
@@ -296,57 +210,58 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         override fun onPlay() {
             info("MediaSessionCallback onPlay")
             becomeNoisyReceiver.register()
-            playSong()
+            playerController.playSong()
         }
 
         override fun onPause() {
             info("MediaSessionCallback onPause")
-            pause()
+            playerController.pause()
         }
 
         override fun onSkipToNext() {
             info("MediaSessionCallback onSkipToNext")
             queueManager.skipPositions(1)
-            playSong(queueManager.getCurrentSong())
+            playerController.playSong(queueManager.getCurrentSong())
         }
 
         override fun onSkipToPrevious() {
             info("MediaSessionCallback onSkipToPrevious")
             queueManager.skipPositions(-1)
-            playSong(queueManager.getCurrentSong())
+            playerController.playSong(queueManager.getCurrentSong())
         }
 
         override fun onStop() {
             info("MediaSessionCallback onStop")
             becomeNoisyReceiver.unregister()
-            stop()
+            playerController.stop()
         }
 
         override fun onSeekTo(pos: Long) {
             info("MediaSessionCallback onSeekTo to $pos")
-            seekTo(pos)
+            playerController.seekTo(pos)
         }
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             info("onPlayFromMediaId -> $mediaId")
 
-            val musicTabsType =
+            val musicType =
                 extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicType
 
-            if (musicTabsType == musicType && queueManager.getCurrentSong()?.id == mediaId) {
-                playSong()
+            if (musicType == this@RiotMusicService.musicType &&
+                queueManager.getCurrentSong()?.id == mediaId) {
+                playerController.playSong()
             } else {
                 mediaId?.let {
                     try {
                         val songModel = songsRepository.getSong(mediaId)
 
-                        if (musicTabsType != musicType) {
-                            musicType = musicTabsType
+                        if (musicType != this@RiotMusicService.musicType) {
+                            this@RiotMusicService.musicType = musicType
                             prepareQueue(songModel)
                         }
 
                         val mediaMetadata = songModel.toMediaMetadata()
-                        playSong(mediaMetadata)
+                        playerController.playSong(mediaMetadata)
                     } catch (e: NoSuchElementException) {
                         error(e.message.toString())
                     }
