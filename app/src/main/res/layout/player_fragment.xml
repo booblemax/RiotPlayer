@@ -40,40 +40,69 @@
         tools:text="In This Moment" />
 
     <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size_24"
+        app:layout_constraintBottom_toBottomOf="@+id/play_pause"
+        app:layout_constraintEnd_toStartOf="@+id/prev"
+        app:layout_constraintTop_toTopOf="@+id/play_pause"
+        app:srcCompat="@drawable/ic_repeat_inactive"
+        />
+
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/prev"
-        android:layout_width="@dimen/size_48"
-        android:layout_height="@dimen/size_48"
-        android:layout_marginBottom="@dimen/size_24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size_24"
         android:background="?attr/selectableItemBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/play_pause"
         app:layout_constraintEnd_toStartOf="@id/play_pause"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/play_pause"
         app:srcCompat="@drawable/ic_skip_previous" />
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/play_pause"
-        android:layout_width="@dimen/size_48"
-        android:layout_height="@dimen/size_48"
-        android:layout_marginBottom="@dimen/size_24"
-        android:background="?attr/selectableItemBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/next"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/prev"
-        app:srcCompat="@drawable/ic_play" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/next"
-        android:layout_width="@dimen/size_48"
-        android:layout_height="@dimen/size_48"
-        android:layout_marginBottom="@dimen/size_24"
-        android:background="?attr/selectableItemBackground"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/size_36"
+        android:backgroundTint="@color/pink"
+        app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/ic_play" />
+
+    <View
+        android:layout_width="134dp"
+        android:layout_height="134dp"
+        android:background="@drawable/bg_button_play"
+        app:layout_constraintStart_toStartOf="@id/play_pause"
+        app:layout_constraintBottom_toBottomOf="@id/play_pause"
+        app:layout_constraintTop_toTopOf="@id/play_pause"
+        app:layout_constraintEnd_toEndOf="@id/play_pause" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_24"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="@+id/play_pause"
         app:layout_constraintStart_toEndOf="@+id/play_pause"
+        app:layout_constraintTop_toTopOf="@+id/play_pause"
         app:srcCompat="@drawable/ic_skip_next" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/shuffle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size_24"
+        app:layout_constraintBottom_toBottomOf="@+id/play_pause"
+        app:layout_constraintStart_toEndOf="@+id/next"
+        app:layout_constraintTop_toTopOf="@+id/play_pause"
+        app:srcCompat="@drawable/ic_shuffle_inactive"
+        />
 
     <by.akella.riotplayer.ui.custom.MusicProgressBar
         android:id="@+id/progressBar"

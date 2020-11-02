@@ -100,10 +100,10 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/size_24"
         android:contentDescription="@string/app_name"
-        android:backgroundTint="@color/pink_light"
-        android:src="@drawable/ic_play"
+        android:backgroundTint="@color/pink"
+        app:tint="@color/white"
+        app:srcCompat="@drawable/ic_play"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end" />
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

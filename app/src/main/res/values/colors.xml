@@ -6,8 +6,11 @@
 
     <color name="white">#FFF</color>
     <color name="pink">#FF00FF</color>
+    <color name="pink_50">#33FF00FF</color>
+    <color name="pink_transparent">#00FF00FF</color>
     <color name="pink_light">#FFCCFF</color>
     <color name="purple">#330066</color>
+    <color name="purple_transparent">#00330066</color>
     <color name="purple_light">#7E57C2</color>
     <color name="blue">#3700B3</color>
 </resources>
