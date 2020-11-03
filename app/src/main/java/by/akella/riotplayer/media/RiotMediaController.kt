@@ -7,8 +7,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.print
 import by.akella.riotplayer.util.stateName
@@ -21,31 +19,20 @@ class RiotMediaController @Inject constructor(
     serviceComponent: ComponentName
 ) {
 
-    /**
-     * LiveData indicates connection with [MediaBrowserCompat]
-     */
-    private val _isConnected = MutableStateFlow(false)
-    val isConnected: StateFlow<Boolean> get() = _isConnected
+    private val _isConnectedToMediaBrowser = MutableStateFlow(false)
+    val isConnectedToMediaBrowser: StateFlow<Boolean> get() = _isConnectedToMediaBrowser
 
-    private val _playbackState = MutableLiveData<PlaybackStateCompat>().apply {
-        postValue(EMPTY_PLAYBACK_STATE)
-    }
-    val playbackState: LiveData<PlaybackStateCompat> get() = _playbackState
+    private val _playbackState = MutableStateFlow<PlaybackStateCompat>(EMPTY_PLAYBACK_STATE)
+    val playbackState: StateFlow<PlaybackStateCompat> get() = _playbackState
 
-    private val _nowPlayingSong = MutableLiveData<MediaMetadataCompat>().apply {
-        postValue(NOTHING_TO_PLAY)
-    }
-    val nowPlayingSong: LiveData<MediaMetadataCompat> get() = _nowPlayingSong
+    private val _nowPlayingSong = MutableStateFlow<MediaMetadataCompat>(NOTHING_TO_PLAY)
+    val nowPlayingSong: StateFlow<MediaMetadataCompat> get() = _nowPlayingSong
 
-    private val _shuffleMode = MutableLiveData<Boolean>().apply {
-        postValue(false)
-    }
-    val shuffleMode: LiveData<Boolean> get() = _shuffleMode
+    private val _shuffleMode = MutableStateFlow(false)
+    val shuffleMode: StateFlow<Boolean> get() = _shuffleMode
 
-    private val _repeatMode = MutableLiveData<Boolean>().apply {
-        postValue(false)
-    }
-    val repeatMode: LiveData<Boolean> get() = _repeatMode
+    private val _repeatMode = MutableStateFlow(false)
+    val repeatMode: StateFlow<Boolean> get() = _repeatMode
 
     private val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls
@@ -60,7 +47,7 @@ class RiotMediaController @Inject constructor(
     private lateinit var mediaController: MediaControllerCompat
 
     fun play(mediaId: String? = null, extra: Bundle? = null) {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             if (mediaId != null) {
                 transportControls.playFromMediaId(mediaId, extra)
             } else {
@@ -70,31 +57,31 @@ class RiotMediaController @Inject constructor(
     }
 
     fun pause() {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             transportControls.pause()
         }
     }
 
     fun next() {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             transportControls.skipToNext()
         }
     }
 
     fun prev() {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             transportControls.skipToPrevious()
         }
     }
 
     fun seekTo(pos: Long) {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             transportControls.seekTo(pos)
         }
     }
 
     fun setShuffleMode() {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             val mode = mediaController.shuffleMode
             transportControls.setShuffleMode(
                 if (mode == PlaybackStateCompat.SHUFFLE_MODE_ALL) PlaybackStateCompat.SHUFFLE_MODE_NONE
@@ -104,7 +91,7 @@ class RiotMediaController @Inject constructor(
     }
 
     fun setRepeatMode() {
-        if (isConnected.value == true) {
+        if (isConnectedToMediaBrowser.value) {
             val mode = mediaController.repeatMode
             transportControls.setRepeatMode(
                 if (mode == PlaybackStateCompat.REPEAT_MODE_ALL) PlaybackStateCompat.REPEAT_MODE_NONE
@@ -122,18 +109,18 @@ class RiotMediaController @Inject constructor(
             mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
                 registerCallback(MediaControllerCallback())
             }
-            _shuffleMode.postValue(mediaController.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
-            _repeatMode.postValue(mediaController.repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL)
+            _shuffleMode.value = mediaController.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL
+            _repeatMode.value = mediaController.repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL
 
-            _isConnected.value = true
+            _isConnectedToMediaBrowser.value = true
         }
 
         override fun onConnectionSuspended() {
-            _isConnected.value = false
+            _isConnectedToMediaBrowser.value = false
         }
 
         override fun onConnectionFailed() {
-            _isConnected.value = false
+            _isConnectedToMediaBrowser.value = false
         }
     }
 
@@ -141,22 +128,22 @@ class RiotMediaController @Inject constructor(
 
         override fun onRepeatModeChanged(repeatMode: Int) {
             info("${this::class.java.simpleName} Repeat Mode changed on ${repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL}")
-            _repeatMode.postValue(repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL)
+            _repeatMode.value = repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL
         }
 
         override fun onShuffleModeChanged(shuffleMode: Int) {
             info("${this::class.java.simpleName} Shuffle Mode changed on ${shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL}")
-            _shuffleMode.postValue(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+            _shuffleMode.value = shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             info("${this::class.java.simpleName} Playback State changed on ${state?.stateName}")
-            _playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
+            _playbackState.value = state ?: EMPTY_PLAYBACK_STATE
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             info("${this::class.java.simpleName} Metadata State changed on ${metadata?.print()}")
-            _nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
+            _nowPlayingSong.value = metadata ?: NOTHING_TO_PLAY
         }
     }
 

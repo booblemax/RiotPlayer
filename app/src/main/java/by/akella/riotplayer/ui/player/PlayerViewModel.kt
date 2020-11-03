@@ -2,29 +2,24 @@ package by.akella.riotplayer.ui.player
 
 import android.os.Handler
 import android.os.Looper
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.os.bundleOf
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.Observer
-import androidx.lifecycle.viewModelScope
+import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.EMPTY_PLAYBACK_STATE
 import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.ui.base.BaseViewModel
+import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.ui.player.state.PlayerState
-import by.akella.riotplayer.util.isPlaying
 import by.akella.riotplayer.util.currentPlayBackPosition
+import by.akella.riotplayer.util.isPlaying
+import by.akella.riotplayer.util.isSkipState
+import by.akella.riotplayer.util.isStop
+import by.akella.riotplayer.util.toSongUiModel
 import com.babylon.orbit2.Container
 import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.reduce
 import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
-import by.akella.riotplayer.dispatchers.DispatcherProvider
-import by.akella.riotplayer.ui.main.state.MusicType
-import by.akella.riotplayer.util.isSkipState
-import by.akella.riotplayer.util.isStop
-import by.akella.riotplayer.util.toSongUiModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -36,75 +31,80 @@ class PlayerViewModel @ViewModelInject constructor(
     private val handler: Handler = Handler(Looper.getMainLooper())
     private var needUpdateDuration = true
 
-    private val nowPlayingSongObserver: Observer<MediaMetadataCompat>
-    private val playbackStateObserver: Observer<PlaybackStateCompat>
-    private val shuffleModeObserver: Observer<Boolean>
-    private val repeatModeObserver: Observer<Boolean>
     private var playbackState = EMPTY_PLAYBACK_STATE
     private var seekToValue = DEFAULT_SEEK_TO_VALUE
 
     override val container: Container<PlayerState, Nothing> = container(PlayerState())
 
     init {
-        with(riotMediaController) {
-            nowPlayingSongObserver = Observer { media ->
-                orbit {
-                    transform {
-                        media.toSongUiModel()
-                    }.reduce {
-                        val isSameSong = state.song?.id == event.id
-                        state.copy(song = event, isSameSong = isSameSong, currentPlayPosition = 0)
-                    }
+        initNowPlayingSongListener()
+        initPlaybackStateListener()
+        initShuffleModeListener()
+        initRepeatModeListener()
+        initConnectionListener()
+    }
+
+    private fun initConnectionListener() {
+        riotMediaController.isConnectedToMediaBrowser.onEach {
+            needUpdateDuration = it
+            if (it) {
+                checkDuration()
+            }
+        }.launchIn(baseScope)
+    }
+
+    private fun initRepeatModeListener() {
+        riotMediaController.repeatMode.onEach {
+            orbit {
+                transform { it }.reduce { state.copy(isRepeatEnabled = event) }
+            }
+        }.launchIn(baseScope)
+    }
+
+    private fun initShuffleModeListener() {
+        riotMediaController.shuffleMode.onEach {
+            orbit {
+                transform { it }.reduce { state.copy(isShuffleEnabled = event) }
+            }
+        }.launchIn(baseScope)
+    }
+
+    private fun initPlaybackStateListener() {
+        riotMediaController.playbackState.onEach { playbackState ->
+            orbit {
+                transform {
+                    this@PlayerViewModel.playbackState = playbackState
+                    playbackState
+                }.reduce {
+                    state.copy(
+                        isPlaying = event.isPlaying,
+                        currentPlayPosition =
+                        if (event.isStop) state.song?.duration ?: 0
+                        else state.currentPlayPosition
+                    )
                 }
             }
-            nowPlayingSong.observeForever(nowPlayingSongObserver)
+        }.launchIn(baseScope)
+    }
 
-            playbackStateObserver = Observer { playbackState ->
-                orbit {
-                    transform {
-                        this@PlayerViewModel.playbackState = playbackState
-                        playbackState
-                    }.reduce {
-                        state.copy(
-                            isPlaying = event.isPlaying,
-                            currentPlayPosition =
-                                if (event.isStop) state.song?.duration ?: 0
-                                else state.currentPlayPosition
-                        )
-                    }
+    private fun initNowPlayingSongListener() {
+        riotMediaController.nowPlayingSong.onEach { media ->
+            orbit {
+                transform {
+                    media.toSongUiModel()
+                }.reduce {
+                    val isSameSong = state.song?.id == event.id
+                    state.copy(song = event, isSameSong = isSameSong, currentPlayPosition = 0)
                 }
             }
-            playbackState.observeForever(playbackStateObserver)
-
-            shuffleModeObserver = Observer {
-                orbit {
-                    transform { it }.reduce { state.copy(isShuffleEnabled = event) }
-                }
-            }
-            shuffleMode.observeForever(shuffleModeObserver)
-
-            repeatModeObserver = Observer {
-                orbit {
-                    transform { it }.reduce { state.copy(isRepeatEnabled = event) }
-                }
-            }
-            repeatMode.observeForever(repeatModeObserver)
-
-            isConnected
-                .onEach {
-                    needUpdateDuration = it
-                    if (it) {
-                        checkDuration()
-                    }
-                }
-                .launchIn(baseScope)
-        }
+        }.launchIn(baseScope)
     }
 
     fun onPlayPauseClicked() {
-        riotMediaController.playbackState.value?.let {
-            if (it.isPlaying) pause()
-            else play(
+        if (riotMediaController.playbackState.value.isPlaying) {
+            pause()
+        } else {
+            play(
                 container.currentState.song?.id ?: "",
                 container.currentState.musicType
             )
@@ -189,12 +189,6 @@ class PlayerViewModel @ViewModelInject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        with(riotMediaController) {
-            nowPlayingSong.removeObserver(nowPlayingSongObserver)
-            playbackState.removeObserver(playbackStateObserver)
-            shuffleMode.removeObserver(shuffleModeObserver)
-            repeatMode.removeObserver(repeatModeObserver)
-        }
         needUpdateDuration = false
     }
 
