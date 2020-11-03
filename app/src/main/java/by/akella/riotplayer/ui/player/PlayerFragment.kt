@@ -8,10 +8,16 @@ import androidx.fragment.app.viewModels
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.TimeUtils
+import by.akella.riotplayer.util.animateGone
+import by.akella.riotplayer.util.animateVisible
+import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.loadAlbumIcon
+import by.akella.riotplayer.util.onSafeClick
+import by.akella.riotplayer.util.visible
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -32,12 +38,14 @@ class PlayerFragment : BaseFragment() {
         binding.next.setOnClickListener { viewModel.next() }
         binding.prev.setOnClickListener { viewModel.prev() }
         binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
+        binding.shuffle.onSafeClick(null, SafeClickListener { viewModel.shuffle() })
+        binding.repeat.onSafeClick(null, SafeClickListener { viewModel.repeat() })
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
-            info(state.toString())
+//            info(state.toString())
             with(state) {
                 song?.let {
                     if (!isSameSong) {
@@ -62,13 +70,44 @@ class PlayerFragment : BaseFragment() {
                             currentPlayPosition
                         )
                 }
-                binding.playPause.setImageResource(
-                    if (isPlaying) R.drawable.ic_pause
-                    else R.drawable.ic_play
-                )
+                renderPlayPause(isPlaying)
+                renderShuffle(isShuffleEnabled)
+                renderRepeat(isRepeatEnabled)
             }
         }
 
         viewModel.play(args.mediaId, MusicType.values()[args.musicType])
+    }
+
+    private fun renderPlayPause(isPlaying: Boolean) {
+        binding.playPause.setImageResource(
+            if (isPlaying) R.drawable.ic_pause
+            else R.drawable.ic_play
+        )
+    }
+
+    private fun renderShuffle(isShuffleEnabled: Boolean) {
+        binding.shuffle.setImageResource(
+            if (isShuffleEnabled) {
+                binding.shuffleBackground.animateVisible()
+                R.drawable.ic_shuffle_active
+            } else {
+                binding.shuffleBackground.animateGone()
+                R.drawable.ic_shuffle_inactive
+            }
+        )
+    }
+
+    private fun renderRepeat(isRepeatEnabled: Boolean) {
+        binding.repeat.setImageResource(
+            if (isRepeatEnabled) {
+                binding.repeatBackground.animateVisible()
+                R.drawable.ic_repeat_active
+            }
+            else {
+                binding.repeatBackground.animateGone()
+                R.drawable.ic_repeat_inactive
+            }
+        )
     }
 }

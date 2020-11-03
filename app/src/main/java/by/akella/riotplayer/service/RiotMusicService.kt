@@ -6,8 +6,8 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -15,8 +15,8 @@ import androidx.media.session.MediaButtonReceiver
 import by.akella.riotplayer.R
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.BecomeNoisyReceiver
-import by.akella.riotplayer.media.PlayerController
 import by.akella.riotplayer.media.PlaybackStateHelper
+import by.akella.riotplayer.media.PlayerController
 import by.akella.riotplayer.media.QueueManager
 import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.notification.RiotNotificationManager
@@ -160,11 +160,17 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
-                Player.STATE_ENDED -> queueManager.nextSong()?.let { media ->
-                    mediaSession.setMetadata(media)
-                    saveSongIntoHistory(media.id)
-                    playerController.playSong(media)
-                }
+                Player.STATE_ENDED ->
+                    try {
+                        queueManager.skipPositions(1)?.let { media ->
+                            mediaSession.setMetadata(media)
+                            saveSongIntoHistory(media.id)
+                            playerController.playSong(media)
+                        }
+                    } catch (e: IllegalArgumentException) {
+                        error(e.message ?: RiotMusicService::class.java.simpleName)
+                        playerController.stop()
+                    }
                 else -> notificationManager.hideNotification()
             }
         }
@@ -208,6 +214,16 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
     private inner class MediaSessionCallback : MediaSessionCompat.Callback() {
 
+        override fun onSetShuffleMode(shuffleMode: Int) {
+            queueManager.shuffleEnabled = shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL
+            mediaSession.setShuffleMode(shuffleMode)
+        }
+
+        override fun onSetRepeatMode(repeatMode: Int) {
+            queueManager.repeatEnabled = repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL
+            mediaSession.setRepeatMode(repeatMode)
+        }
+
         override fun onPlay() {
             info("MediaSessionCallback onPlay")
             becomeNoisyReceiver.register()
@@ -231,10 +247,15 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
 
         private fun skipAndPlay(count: Int) {
-            queueManager.skipPositions(count)?.let { media ->
-                mediaSession.setMetadata(media)
-                saveSongIntoHistory(media.id)
-                playerController.playSong(media)
+            try {
+                queueManager.skipPositions(count)?.let { media ->
+                    mediaSession.setMetadata(media)
+                    saveSongIntoHistory(media.id)
+                    playerController.playSong(media)
+                }
+            } catch (e: IllegalArgumentException) {
+                error(e.message ?: RiotMusicService::class.java.simpleName)
+                playerController.stop()
             }
         }
 
@@ -266,7 +287,8 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                         val currentSong = queueManager.getCurrentSong()
 
                         if (musicType != this@RiotMusicService.musicType ||
-                            currentSong?.album != songModel.album) {
+                            currentSong?.album != songModel.album
+                        ) {
                             this@RiotMusicService.musicType = musicType
                             prepareQueue(songModel)
                         } else {

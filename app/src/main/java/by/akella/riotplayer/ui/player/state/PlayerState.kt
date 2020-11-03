@@ -8,9 +8,12 @@ data class PlayerState(
     val currentPlayPosition: Long = 0L,
     val isSameSong: Boolean = false,
     val isPlaying: Boolean = false,
-    val musicType: MusicType? = null
+    val musicType: MusicType? = null,
+    val isRepeatEnabled: Boolean = false,
+    val isShuffleEnabled: Boolean = false
 ) {
     override fun toString(): String {
-        return "PlayerState(isPlaying=$isPlaying, song=$song, isSameSong=$isSameSong, isPlaying=$isPlaying, currentPlayPosition=$currentPlayPosition)"
+        return "PlayerState(isPlaying=$isPlaying, song=$song, isSameSong=$isSameSong, isPlaying=$isPlaying," +
+                " currentPlayPosition=$currentPlayPosition), isRepeatEnabled=$isRepeatEnabled, isShuffleEnabled=$isShuffleEnabled"
     }
 }

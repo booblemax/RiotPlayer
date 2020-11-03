@@ -34,6 +34,8 @@ class PlayerViewModel @ViewModelInject constructor(
     private val nowPlayingSongObserver: Observer<MediaMetadataCompat>
     private val playbackStateObserver: Observer<PlaybackStateCompat>
     private val connectionObserver: Observer<Boolean>
+    private val shuffleModeObserver: Observer<Boolean>
+    private val repeatModeObserver: Observer<Boolean>
     private var playbackState = EMPTY_PLAYBACK_STATE
     private var seekToValue = DEFAULT_SEEK_TO_VALUE
 
@@ -64,6 +66,20 @@ class PlayerViewModel @ViewModelInject constructor(
                 }
             }
             playbackState.observeForever(playbackStateObserver)
+
+            shuffleModeObserver = Observer {
+                orbit {
+                    transform { it }.reduce { state.copy(isShuffleEnabled = event) }
+                }
+            }
+            shuffleMode.observeForever(shuffleModeObserver)
+
+            repeatModeObserver = Observer {
+                orbit {
+                    transform { it }.reduce { state.copy(isRepeatEnabled = event) }
+                }
+            }
+            repeatMode.observeForever(repeatModeObserver)
 
             connectionObserver = Observer {
                 needUpdateDuration = it
@@ -112,6 +128,14 @@ class PlayerViewModel @ViewModelInject constructor(
         riotMediaController.seekTo(pos)
     }
 
+    fun shuffle() {
+        riotMediaController.setShuffleMode()
+    }
+
+    fun repeat() {
+        riotMediaController.setRepeatMode()
+    }
+
     private fun checkDuration(): Boolean = handler.postDelayed(
         {
             val playPosition = playbackState.currentPlayBackPosition
@@ -157,6 +181,8 @@ class PlayerViewModel @ViewModelInject constructor(
         with(riotMediaController) {
             nowPlayingSong.removeObserver(nowPlayingSongObserver)
             playbackState.removeObserver(playbackStateObserver)
+            shuffleMode.removeObserver(shuffleModeObserver)
+            repeatMode.removeObserver(repeatModeObserver)
             isConnected.removeObserver(connectionObserver)
         }
         needUpdateDuration = false

@@ -16,6 +16,6 @@ class SafeClickListener<T : Any?>(
     }
 
     companion object {
-        private const val CLICK_DELAY = 1000L
+        private const val CLICK_DELAY = 500L
     }
 }

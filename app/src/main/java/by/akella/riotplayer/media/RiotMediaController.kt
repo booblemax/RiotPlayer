@@ -7,6 +7,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.print
@@ -20,14 +21,28 @@ class RiotMediaController @Inject constructor(
     /**
      * LiveData indicates connection with [MediaBrowserCompat]
      */
-    val isConnected = MutableLiveData<Boolean>().apply { postValue(false) }
+    private val _isConnected = MutableLiveData<Boolean>().apply { postValue(false) }
+    val isConnected: LiveData<Boolean> get() = _isConnected
 
-    val playbackState = MutableLiveData<PlaybackStateCompat>().apply {
+    private val _playbackState = MutableLiveData<PlaybackStateCompat>().apply {
         postValue(EMPTY_PLAYBACK_STATE)
     }
-    val nowPlayingSong = MutableLiveData<MediaMetadataCompat>().apply {
+    val playbackState: LiveData<PlaybackStateCompat> get() = _playbackState
+
+    private val _nowPlayingSong = MutableLiveData<MediaMetadataCompat>().apply {
         postValue(NOTHING_TO_PLAY)
     }
+    val nowPlayingSong: LiveData<MediaMetadataCompat> get() = _nowPlayingSong
+
+    private val _shuffleMode = MutableLiveData<Boolean>().apply {
+        postValue(false)
+    }
+    val shuffleMode: LiveData<Boolean> get() = _shuffleMode
+
+    private val _repeatMode = MutableLiveData<Boolean>().apply {
+        postValue(false)
+    }
+    val repeatMode: LiveData<Boolean> get() = _repeatMode
 
     private val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls
@@ -40,14 +55,6 @@ class RiotMediaController @Inject constructor(
     ).apply { connect() }
 
     private lateinit var mediaController: MediaControllerCompat
-
-    fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.subscribe(parentId, callback)
-    }
-
-    fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.unsubscribe(parentId, callback)
-    }
 
     fun play(mediaId: String? = null, extra: Bundle? = null) {
         if (isConnected.value == true) {
@@ -83,6 +90,26 @@ class RiotMediaController @Inject constructor(
         }
     }
 
+    fun setShuffleMode() {
+        if (isConnected.value == true) {
+            val mode = mediaController.shuffleMode
+            transportControls.setShuffleMode(
+                if (mode == PlaybackStateCompat.SHUFFLE_MODE_ALL) PlaybackStateCompat.SHUFFLE_MODE_NONE
+                else PlaybackStateCompat.SHUFFLE_MODE_ALL
+            )
+        }
+    }
+
+    fun setRepeatMode() {
+        if (isConnected.value == true) {
+            val mode = mediaController.repeatMode
+            transportControls.setRepeatMode(
+                if (mode == PlaybackStateCompat.REPEAT_MODE_ALL) PlaybackStateCompat.REPEAT_MODE_NONE
+                else PlaybackStateCompat.REPEAT_MODE_ALL
+            )
+        }
+    }
+
     private inner class MediaBrowserConnectionCallback(
         private val context: Context
     ) : MediaBrowserCompat.ConnectionCallback() {
@@ -92,29 +119,41 @@ class RiotMediaController @Inject constructor(
             mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
                 registerCallback(MediaControllerCallback())
             }
+            _shuffleMode.postValue(mediaController.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+            _repeatMode.postValue(mediaController.repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL)
 
-            isConnected.postValue(true)
+            _isConnected.postValue(true)
         }
 
         override fun onConnectionSuspended() {
-            isConnected.postValue(false)
+            _isConnected.postValue(false)
         }
 
         override fun onConnectionFailed() {
-            isConnected.postValue(false)
+            _isConnected.postValue(false)
         }
     }
 
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
 
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            info("${this::class.java.simpleName} Repeat Mode changed on ${repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL}")
+            _repeatMode.postValue(repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL)
+        }
+
+        override fun onShuffleModeChanged(shuffleMode: Int) {
+            info("${this::class.java.simpleName} Shuffle Mode changed on ${shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL}")
+            _shuffleMode.postValue(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+        }
+
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             info("${this::class.java.simpleName} Playback State changed on $state")
-            playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
+            _playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             info("${this::class.java.simpleName} Metadata State changed on ${metadata?.print()}")
-            nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
+            _nowPlayingSong.postValue(metadata ?: NOTHING_TO_PLAY)
         }
     }
 

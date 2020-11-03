@@ -3,11 +3,15 @@ package by.akella.riotplayer.media
 import android.support.v4.media.MediaMetadataCompat
 import by.akella.riotplayer.util.id
 import javax.inject.Inject
+import kotlin.random.Random
 
 class QueueManager @Inject constructor() {
 
     private var currentIndex = 0
     private val playingQueue: MutableList<MediaMetadataCompat> = mutableListOf()
+
+    var shuffleEnabled: Boolean = false
+    var repeatEnabled: Boolean = false
 
     fun setCurrentSong(mediaId: String) {
         val index =
@@ -20,27 +24,11 @@ class QueueManager @Inject constructor() {
     private fun setCurrentIndex(index: Int) {
         if (index >= 0 && index < playingQueue.size) {
             currentIndex = index
-        }
-    }
-
-    fun nextSong(): MediaMetadataCompat? {
-        return if (currentIndex + 1 < playingQueue.size) {
-            setCurrentIndex(currentIndex + 1)
-            playingQueue[currentIndex]
-        } else {
-            null
-        }
+        } else throw IllegalArgumentException("Wrong index value $index")
     }
 
     fun skipPositions(count: Int): MediaMetadataCompat? {
-        var index = currentIndex + count
-        if (index < 0 || playingQueue.isEmpty()) {
-            index = 0
-        }
-        if (index >= playingQueue.size) {
-            index %= playingQueue.size
-        }
-
+        val index = generateNextIndex(count)
         setCurrentIndex(index)
         return getCurrentSong()
     }
@@ -54,5 +42,17 @@ class QueueManager @Inject constructor() {
         playingQueue.addAll(queue)
 
         setCurrentSong(initialMediaId)
+    }
+
+    private fun generateNextIndex(count: Int): Int {
+        var index =
+            if (shuffleEnabled) Random.Default.nextInt(0, getQueueSize())
+            else getQueueSize() + count
+
+        if (repeatEnabled && index >= getQueueSize()) {
+            index %= playingQueue.size
+        }
+
+        return index
     }
 }

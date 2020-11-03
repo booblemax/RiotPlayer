@@ -48,9 +48,7 @@ fun View.visible() {
 }
 
 fun View.animateVisible() {
-    if (visibility != View.VISIBLE) {
-        animate().alpha(1f).withEndAction { visible() }.start()
-    }
+    animate().alpha(1f).start()
 }
 
 fun View.invisible() {
@@ -66,7 +64,7 @@ fun View.gone() {
 }
 
 fun View.animateGone() {
-    animate().alpha(1f).withEndAction { visible() }.start()
+    animate().alpha(0f).start()
 }
 
 fun <T : Any?> View.onSafeClick(item: T? = null, listener: SafeClickListener<T>) {
@@ -76,24 +74,6 @@ fun <T : Any?> View.onSafeClick(item: T? = null, listener: SafeClickListener<T>)
 fun Fragment.waitForTransition(targetView: View) {
     postponeEnterTransition()
     targetView.doOnPreDraw { startPostponedEnterTransition() }
-}
-
-fun Activity.makeStatusBarTransparent() {
-    if (Versions.isApiOrUp(Build.VERSION_CODES.LOLLIPOP)) {
-        window.apply {
-            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            statusBarColor = Color.TRANSPARENT
-        }
-    }
-}
-
-fun Activity.makeStatusBarVisible() {
-    window.apply {
-        decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        statusBarColor = ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, theme)
-    }
 }
 
 fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY

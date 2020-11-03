@@ -40,6 +40,7 @@
         tools:text="In This Moment" />
 
     <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/repeat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/size_24"
@@ -47,6 +48,18 @@
         app:layout_constraintEnd_toStartOf="@+id/prev"
         app:layout_constraintTop_toTopOf="@+id/play_pause"
         app:srcCompat="@drawable/ic_repeat_inactive"
+        />
+
+    <View
+        android:id="@+id/repeat_background"
+        android:layout_width="@dimen/size_72"
+        android:layout_height="@dimen/size_72"
+        android:background="@drawable/bg_button_func"
+        android:alpha="0"
+        app:layout_constraintStart_toStartOf="@id/repeat"
+        app:layout_constraintBottom_toBottomOf="@id/repeat"
+        app:layout_constraintTop_toTopOf="@id/repeat"
+        app:layout_constraintEnd_toEndOf="@id/repeat"
         />
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -62,6 +75,7 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/play_pause"
+        android:contentDescription="@string/fab_content_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/size_36"
@@ -101,7 +115,18 @@
         app:layout_constraintBottom_toBottomOf="@+id/play_pause"
         app:layout_constraintStart_toEndOf="@+id/next"
         app:layout_constraintTop_toTopOf="@+id/play_pause"
-        app:srcCompat="@drawable/ic_shuffle_inactive"
+        app:srcCompat="@drawable/ic_shuffle_inactive" />
+
+    <View
+        android:id="@+id/shuffle_background"
+        android:layout_width="@dimen/size_72"
+        android:layout_height="@dimen/size_72"
+        android:background="@drawable/bg_button_func"
+        android:alpha="0"
+        app:layout_constraintStart_toStartOf="@id/shuffle"
+        app:layout_constraintBottom_toBottomOf="@id/shuffle"
+        app:layout_constraintTop_toTopOf="@id/shuffle"
+        app:layout_constraintEnd_toEndOf="@id/shuffle"
         />
 
     <by.akella.riotplayer.ui.custom.MusicProgressBar
