@@ -17,7 +17,7 @@ abstract class BaseViewModel(dispatcherProvider: DispatcherProvider) : ViewModel
     private val exceptionHandler =
         CoroutineExceptionHandler { _, throwable -> handleException(throwable) }
 
-    private val baseScope = CoroutineScope(dispatcherProvider.main() + exceptionHandler + job)
+    protected val baseScope = CoroutineScope(dispatcherProvider.main() + exceptionHandler + job)
 
     protected fun handleException(throwable: Throwable) {
         error(throwable)

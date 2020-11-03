@@ -20,6 +20,8 @@ import com.babylon.orbit2.ContainerHost
 import com.babylon.orbit2.reduce
 import com.babylon.orbit2.transform
 import com.babylon.orbit2.viewmodel.container
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class MainViewModel @ViewModelInject constructor(
     dispatchersProvider: DispatcherProvider,
@@ -37,7 +39,7 @@ class MainViewModel @ViewModelInject constructor(
     private val playbackObserver: Observer<PlaybackStateCompat> = Observer {
         val stateForDisplay = when (it.state) {
             PlaybackStateCompat.STATE_NONE, PlaybackStateCompat.STATE_STOPPED,
-                PlaybackStateCompat.STATE_ERROR -> false
+            PlaybackStateCompat.STATE_ERROR -> false
             else -> true
         }
         orbit {
@@ -52,14 +54,17 @@ class MainViewModel @ViewModelInject constructor(
     }
 
     init {
-        riotMediaController.isConnected.observeForever(isConnectedObserver)
+        riotMediaController.isConnected.onEach {
+            orbit {
+                transform { it }.reduce { state.copy(playerConnected = event) }
+            }
+        }.launchIn(baseScope)
         riotMediaController.playbackState.observeForever(playbackObserver)
         riotMediaController.nowPlayingSong.observeForever(nowPlayingObserver)
     }
 
     override fun onCleared() {
         super.onCleared()
-        riotMediaController.isConnected.removeObserver(isConnectedObserver)
         riotMediaController.playbackState.removeObserver(playbackObserver)
         riotMediaController.nowPlayingSong.removeObserver(nowPlayingObserver)
     }

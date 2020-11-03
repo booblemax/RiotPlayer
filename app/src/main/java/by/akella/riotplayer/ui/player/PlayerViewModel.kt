@@ -7,6 +7,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.os.bundleOf
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import by.akella.riotplayer.media.EMPTY_PLAYBACK_STATE
 import by.akella.riotplayer.media.RiotMediaController
 import by.akella.riotplayer.ui.base.BaseViewModel
@@ -21,7 +22,11 @@ import com.babylon.orbit2.viewmodel.container
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.isSkipState
+import by.akella.riotplayer.util.isStop
 import by.akella.riotplayer.util.toSongUiModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class PlayerViewModel @ViewModelInject constructor(
     dispatcherProvider: DispatcherProvider,
@@ -33,7 +38,6 @@ class PlayerViewModel @ViewModelInject constructor(
 
     private val nowPlayingSongObserver: Observer<MediaMetadataCompat>
     private val playbackStateObserver: Observer<PlaybackStateCompat>
-    private val connectionObserver: Observer<Boolean>
     private val shuffleModeObserver: Observer<Boolean>
     private val repeatModeObserver: Observer<Boolean>
     private var playbackState = EMPTY_PLAYBACK_STATE
@@ -59,9 +63,14 @@ class PlayerViewModel @ViewModelInject constructor(
                 orbit {
                     transform {
                         this@PlayerViewModel.playbackState = playbackState
-                        playbackState.isPlaying
+                        playbackState
                     }.reduce {
-                        state.copy(isPlaying = event)
+                        state.copy(
+                            isPlaying = event.isPlaying,
+                            currentPlayPosition =
+                                if (event.isStop) state.song?.duration ?: 0
+                                else state.currentPlayPosition
+                        )
                     }
                 }
             }
@@ -81,13 +90,14 @@ class PlayerViewModel @ViewModelInject constructor(
             }
             repeatMode.observeForever(repeatModeObserver)
 
-            connectionObserver = Observer {
-                needUpdateDuration = it
-                if (it) {
-                    checkDuration()
+            isConnected
+                .onEach {
+                    needUpdateDuration = it
+                    if (it) {
+                        checkDuration()
+                    }
                 }
-            }
-            isConnected.observeForever(connectionObserver)
+                .launchIn(baseScope)
         }
     }
 
@@ -139,6 +149,7 @@ class PlayerViewModel @ViewModelInject constructor(
     private fun checkDuration(): Boolean = handler.postDelayed(
         {
             val playPosition = playbackState.currentPlayBackPosition
+
             resetSeekToPositionIfCan(playPosition)
             if (canApplyNewPosition(playPosition) && isValidState()) {
                 orbit {
@@ -164,8 +175,7 @@ class PlayerViewModel @ViewModelInject constructor(
     private fun getValidPosition(state: PlayerState, playPosition: Long): Long {
         val duration = state.song?.duration ?: 0
         return when {
-            playPosition > duration ||
-                    playbackState.state == PlaybackStateCompat.STATE_STOPPED -> duration
+            playPosition > duration -> duration
             playPosition < seekToValue -> seekToValue
             else -> playPosition
         }
@@ -184,7 +194,6 @@ class PlayerViewModel @ViewModelInject constructor(
             playbackState.removeObserver(playbackStateObserver)
             shuffleMode.removeObserver(shuffleModeObserver)
             repeatMode.removeObserver(repeatModeObserver)
-            isConnected.removeObserver(connectionObserver)
         }
         needUpdateDuration = false
     }

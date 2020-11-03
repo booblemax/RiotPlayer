@@ -52,6 +52,9 @@ inline val PlaybackStateCompat.isSkipState
     get() = (state == PlaybackStateCompat.STATE_SKIPPING_TO_NEXT) ||
                 (state == PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS)
 
+inline val PlaybackStateCompat.isStop
+    get() = (state == PlaybackStateCompat.STATE_STOPPED)
+
 inline val PlaybackStateCompat.stateName
     get() = when (state) {
         PlaybackStateCompat.STATE_NONE -> "STATE_NONE"

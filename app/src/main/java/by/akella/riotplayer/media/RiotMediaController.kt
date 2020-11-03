@@ -12,6 +12,8 @@ import androidx.lifecycle.MutableLiveData
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.print
 import by.akella.riotplayer.util.stateName
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 class RiotMediaController @Inject constructor(
@@ -22,8 +24,8 @@ class RiotMediaController @Inject constructor(
     /**
      * LiveData indicates connection with [MediaBrowserCompat]
      */
-    private val _isConnected = MutableLiveData<Boolean>().apply { postValue(false) }
-    val isConnected: LiveData<Boolean> get() = _isConnected
+    private val _isConnected = MutableStateFlow(false)
+    val isConnected: StateFlow<Boolean> get() = _isConnected
 
     private val _playbackState = MutableLiveData<PlaybackStateCompat>().apply {
         postValue(EMPTY_PLAYBACK_STATE)
@@ -123,15 +125,15 @@ class RiotMediaController @Inject constructor(
             _shuffleMode.postValue(mediaController.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
             _repeatMode.postValue(mediaController.repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL)
 
-            _isConnected.postValue(true)
+            _isConnected.value = true
         }
 
         override fun onConnectionSuspended() {
-            _isConnected.postValue(false)
+            _isConnected.value = false
         }
 
         override fun onConnectionFailed() {
-            _isConnected.postValue(false)
+            _isConnected.value = false
         }
     }
 

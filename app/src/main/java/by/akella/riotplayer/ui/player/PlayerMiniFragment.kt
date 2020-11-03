@@ -67,13 +67,16 @@ class PlayerMiniFragment : BaseFragment() {
                 }
 
                 binding.progress.value = currentPlayPosition / TimeUtils.MILLIS
-
-                binding.playPause.setImageResource(
-                    if (isPlaying) R.drawable.ic_pause
-                    else R.drawable.ic_play
-                )
+                renderPlayPause(isPlaying)
             }
         }
+    }
+
+    private fun renderPlayPause(isPlaying: Boolean) {
+        binding.playPause.setImageResource(
+            if (isPlaying) R.drawable.ic_pause
+            else R.drawable.ic_play
+        )
     }
 
     private fun navigateToPlayer() {
