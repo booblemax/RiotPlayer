@@ -62,6 +62,8 @@ inline val PlaybackStateCompat.stateName
         PlaybackStateCompat.STATE_REWINDING -> "STATE_REWINDING"
         PlaybackStateCompat.STATE_BUFFERING -> "STATE_BUFFERING"
         PlaybackStateCompat.STATE_ERROR -> "STATE_ERROR"
+        PlaybackStateCompat.STATE_SKIPPING_TO_NEXT -> "STATE_SKIPPING_TO_NEXT"
+        PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS -> "STATE_SKIPPING_TO_PREVIOUS"
         else -> "UNKNOWN_STATE"
     }
 

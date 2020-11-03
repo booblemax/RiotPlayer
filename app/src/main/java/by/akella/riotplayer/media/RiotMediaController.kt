@@ -11,6 +11,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.print
+import by.akella.riotplayer.util.stateName
 import javax.inject.Inject
 
 class RiotMediaController @Inject constructor(
@@ -147,7 +148,7 @@ class RiotMediaController @Inject constructor(
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            info("${this::class.java.simpleName} Playback State changed on $state")
+            info("${this::class.java.simpleName} Playback State changed on ${state?.stateName}")
             _playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
         }
 

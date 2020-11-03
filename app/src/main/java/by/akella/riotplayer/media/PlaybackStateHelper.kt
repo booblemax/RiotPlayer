@@ -33,12 +33,12 @@ class PlaybackStateHelper(
         mediaSession.setPlaybackState(stateBuilder.build())
     }
 
-    fun applySkipNextState() {
+    fun applySkipToNextState() {
         stateBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0, 1f)
         mediaSession.setPlaybackState(stateBuilder.build())
     }
 
-    fun applySkipPreviousState() {
+    fun applySkipToPreviousState() {
         stateBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0, 1f)
         mediaSession.setPlaybackState(stateBuilder.build())
     }

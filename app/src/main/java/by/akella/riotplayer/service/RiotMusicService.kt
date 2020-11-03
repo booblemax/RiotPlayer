@@ -237,12 +237,13 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
         override fun onSkipToNext() {
             info("MediaSessionCallback onSkipToNext")
-            playbackStateHelper.applyStopState()
+            playbackStateHelper.applySkipToNextState()
             skipAndPlay(1)
         }
 
         override fun onSkipToPrevious() {
             info("MediaSessionCallback onSkipToPrevious")
+            playbackStateHelper.applySkipToPreviousState()
             skipAndPlay(-1)
         }
 

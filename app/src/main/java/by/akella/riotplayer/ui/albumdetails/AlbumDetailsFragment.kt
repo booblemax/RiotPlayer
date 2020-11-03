@@ -60,7 +60,7 @@ class AlbumDetailsFragment : BaseFragment() {
             setHasFixedSize(true)
             addItemDecoration(
                 OffsetItemDecoration(
-                    top = resources.getDimensionPixelOffset(R.dimen.size_26),
+                    top = resources.getDimensionPixelOffset(R.dimen.size_32),
                     bottom = resources.getDimensionPixelOffset(R.dimen.size_8)
                 )
             );

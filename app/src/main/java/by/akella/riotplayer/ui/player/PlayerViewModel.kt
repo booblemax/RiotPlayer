@@ -164,7 +164,8 @@ class PlayerViewModel @ViewModelInject constructor(
     private fun getValidPosition(state: PlayerState, playPosition: Long): Long {
         val duration = state.song?.duration ?: 0
         return when {
-            playPosition > duration -> duration
+            playPosition > duration ||
+                    playbackState.state == PlaybackStateCompat.STATE_STOPPED -> duration
             playPosition < seekToValue -> seekToValue
             else -> playPosition
         }

@@ -46,8 +46,14 @@ class QueueManager @Inject constructor() {
 
     private fun generateNextIndex(count: Int): Int {
         var index =
-            if (shuffleEnabled) Random.Default.nextInt(0, getQueueSize())
-            else getQueueSize() + count
+            if (shuffleEnabled) {
+                var nextIndex: Int
+                do {
+                    nextIndex = Random.Default.nextInt(0, getQueueSize())
+                } while (nextIndex == currentIndex)
+                nextIndex
+            }
+            else currentIndex + count
 
         if (repeatEnabled && index >= getQueueSize()) {
             index %= playingQueue.size
