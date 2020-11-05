@@ -21,6 +21,7 @@ import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.onSafeClick
 import by.akella.riotplayer.util.visible
+import by.akella.riotplayer.util.waitForTransition
 import com.babylon.orbit2.livedata.state
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -69,6 +70,7 @@ class AlbumDetailsFragment : BaseFragment() {
         binding.toolbar.setNavigationOnClickListener { onBackPressed() }
         viewModel.container.state.observe(viewLifecycleOwner, this::renderState)
         viewModel.loadSongs(args.albumModel)
+        waitForTransition(binding.expandingImage)
     }
 
     private fun renderState(state: AlbumDetailsState) {
@@ -143,6 +145,7 @@ class AlbumDetailsFragment : BaseFragment() {
                         rgb?.let { color -> binding.collapsingLayout.setExpandedTitleColor(color) }
                     }
             }
+
             return false
         }
     }

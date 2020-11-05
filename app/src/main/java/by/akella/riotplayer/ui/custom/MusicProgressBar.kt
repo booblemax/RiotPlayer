@@ -27,13 +27,14 @@ class MusicProgressBar @JvmOverloads constructor(
     var value: Long = 0
         set(value) {
             if (!isTrackingStarted) {
-                progress = ceil(value * DIVIDEND / getInterval()).toInt()
+                progress = ceil(value * DIVIDEND / interval).toInt()
             }
             field = value
         }
-        get() = ceil(progress * getInterval() / DIVIDEND).toLong()
+        get() = ceil(progress * interval / DIVIDEND).toLong()
 
     private var isTrackingStarted = false
+    private val interval: Long get() = valueTo - valueFrom
 
     init {
         setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
@@ -49,8 +50,6 @@ class MusicProgressBar @JvmOverloads constructor(
             }
         })
     }
-
-    private fun getInterval(): Long = valueTo - valueFrom
 
     fun disableTouch() {
         setOnTouchListener { _, _ -> true }

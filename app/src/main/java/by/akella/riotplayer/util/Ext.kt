@@ -1,6 +1,7 @@
 package by.akella.riotplayer.util
 
 import android.app.Activity
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -17,6 +18,10 @@ import androidx.fragment.app.Fragment
 import by.akella.riotplayer.R
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.snackbar.Snackbar
 
 fun Activity.setupToolbar(toolbar: Toolbar) {
@@ -78,10 +83,36 @@ fun Fragment.waitForTransition(targetView: View) {
 
 fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY
 
-fun AppCompatImageView.loadAlbumIcon(albumIconPath: String, @DrawableRes default: Int) {
+fun AppCompatImageView.loadAlbumIcon(
+    albumIconPath: String,
+    @DrawableRes default: Int,
+    action: () -> Unit = {}
+) {
     Glide.with(this)
         .asBitmap()
         .load(albumIconPath)
         .error(default)
+        .addListener(object : RequestListener<Bitmap> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Bitmap>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                action()
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Bitmap?,
+                model: Any?,
+                target: Target<Bitmap>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                action()
+                return false
+            }
+        })
         .into(this)
 }

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/testFragment">
 
     <fragment
         android:id="@+id/mainFragment"
@@ -41,4 +41,8 @@
             android:name="albumModel"
             app:argType="by.akella.riotplayer.repository.albums.AlbumModel" />
     </fragment>
+    <fragment
+        android:id="@+id/testFragment"
+        android:name="by.akella.riotplayer.ui.TestFragment"
+        android:label="TestFragment" />
 </navigation>
