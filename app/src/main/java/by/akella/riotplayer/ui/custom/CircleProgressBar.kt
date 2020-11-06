@@ -12,11 +12,9 @@ import androidx.core.content.res.ResourcesCompat
 import by.akella.riotplayer.R
 import by.akella.riotplayer.util.info
 import kotlin.math.acos
-import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.pow
-import kotlin.math.round
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -81,13 +79,13 @@ class CircleProgressBar @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    private var r: Float = 0f
+    private var radius: Float = 0f
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
         val height = getDefaultSize(suggestedMinimumHeight, heightMeasureSpec)
         val min = max(width, height)
-        r = min / 2f - pathWidth
+        radius = min / 2f - pathWidth
         centerX = (width - paddingStart - paddingEnd) / 2f
         centerY = (height - paddingStart - paddingEnd) / 2f
 
@@ -97,7 +95,7 @@ class CircleProgressBar @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas?) {
-        canvas?.drawCircle(centerX, centerY, r, pathPaint)
+        canvas?.drawCircle(centerX, centerY, radius, pathPaint)
         canvas?.drawCircle(thumbX, thumbY, thumbRadius, thumbPaint)
 
         val start = paddingStart + pathWidth
@@ -134,8 +132,8 @@ class CircleProgressBar @JvmOverloads constructor(
 
     private fun updateThumbPosition(currProgress: Float) {
         val rads = calculateProgressAngleInRadian(currProgress)
-        thumbX = (measuredWidth / 2 + r * cos(rads)).toFloat()
-        thumbY = (measuredHeight / 2 + r * sin(rads)).toFloat()
+        thumbX = (measuredWidth / 2 + radius * cos(rads)).toFloat()
+        thumbY = (measuredHeight / 2 + radius * sin(rads)).toFloat()
     }
 
     private fun calculateProgressAngleInRadian(progress: Float): Double {
@@ -154,7 +152,7 @@ class CircleProgressBar @JvmOverloads constructor(
         val y = event.y
 
         if ((event.action == MotionEvent.ACTION_MOVE ||
-                    event.action == MotionEvent.ACTION_DOWN) && isTouch(x, y)) {
+                    event.action == MotionEvent.ACTION_DOWN) && isTouchOnPathRegion(x, y)) {
             needAnimate = event.action == MotionEvent.ACTION_DOWN
             info("event ${event.action}")
             val cos = computeCos(x, y)
@@ -169,10 +167,11 @@ class CircleProgressBar @JvmOverloads constructor(
         return super.onTouchEvent(event)
     }
 
-    //todo refactor to isTouch on only circle
-    private fun isTouch(x: Float, y: Float): Boolean {
-        val radius = (width - paddingStart - paddingEnd + pathWidth) / 2
-        return (centerX - x).pow(2) + (centerY - y).pow(2) < radius * radius
+    private fun isTouchOnPathRegion(x: Float, y: Float): Boolean {
+        val outRadius = radius + pathWidth + thumbRadius
+        val inRadius = radius - pathWidth - thumbRadius
+        val powCathetuses = (centerX - x).pow(2) + (centerY - y).pow(2)
+        return inRadius * inRadius <= powCathetuses && powCathetuses <= outRadius * outRadius
     }
 
     private fun computeCos(x: Float, y: Float): Float {
