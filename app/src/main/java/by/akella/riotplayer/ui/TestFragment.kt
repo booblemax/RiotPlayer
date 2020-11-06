@@ -37,7 +37,7 @@ class TestFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.counter.onEach {
 //            info(it.toString())
-//            binding.bar.value = it
+            binding.bar.value = it.toFloat()
         }.launchIn(lifecycleScope)
     }
 }

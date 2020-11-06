@@ -6,16 +6,26 @@
     android:layout_height="match_parent"
     android:background="@color/purple">
 
-    <com.google.android.material.imageview.ShapeableImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/album_image"
         android:layout_width="300dp"
         android:layout_height="300dp"
         android:layout_marginTop="@dimen/size_48"
+        android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:shapeAppearanceOverlay="@style/AlbumImage"
         tools:src="@color/pink"/>
+
+    <by.akella.riotplayer.ui.custom.CircleProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="@id/album_image"
+        app:layout_constraintEnd_toEndOf="@id/album_image"
+        app:layout_constraintTop_toTopOf="@id/album_image"
+        app:layout_constraintBottom_toBottomOf="@id/album_image"
+        />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/song_name"
@@ -137,20 +147,6 @@
         app:layout_constraintTop_toTopOf="@id/shuffle"
         app:layout_constraintEnd_toEndOf="@id/shuffle"
         />
-
-    <by.akella.riotplayer.ui.custom.MusicProgressBar
-        android:id="@+id/progressBar"
-        style="@style/Progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/size_48"
-        android:layout_marginEnd="@dimen/size_48"
-        android:layout_marginBottom="@dimen/size_18"
-        app:layout_constraintBottom_toTopOf="@+id/play_pause"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/song_artist"
-        app:layout_constraintVertical_bias="0.8" />
 
     <androidx.appcompat.widget.AppCompatTextView
         style="@style/Subtitle"

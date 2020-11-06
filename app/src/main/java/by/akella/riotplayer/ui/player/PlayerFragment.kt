@@ -34,7 +34,7 @@ class PlayerFragment : BaseFragment() {
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
         binding.next.setOnClickListener { viewModel.next() }
         binding.prev.setOnClickListener { viewModel.prev() }
-        binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
+//        binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
         binding.shuffle.onSafeClick(null, SafeClickListener { viewModel.shuffle() })
         binding.repeat.onSafeClick(null, SafeClickListener { viewModel.repeat() })
         return binding.root
@@ -55,11 +55,11 @@ class PlayerFragment : BaseFragment() {
                             TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
 
                         val duration = it.duration / TimeUtils.MILLIS
-                        binding.progressBar.valueTo = duration
-                        binding.progressBar.valueFrom = 0
+                        binding.progressBar.valueTo = duration.toFloat()
+                        binding.progressBar.valueFrom = 0f
                     }
 
-                    binding.progressBar.value = currentPlayPosition / TimeUtils.MILLIS
+                    binding.progressBar.value = currentPlayPosition / TimeUtils.MILLIS.toFloat()
                     binding.currentPlayTime.text =
                         TimeUtils.convertMillisToShortTime(
                             requireContext(),

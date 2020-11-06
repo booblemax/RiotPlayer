@@ -18,7 +18,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class CircleProgressBar @JvmOverloads constructor(
+open class CircleProgressBar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet,
     defAttrs: Int = 0
@@ -33,31 +33,22 @@ class CircleProgressBar @JvmOverloads constructor(
     private var thumbX = 0f
     private var thumbY = 0f
 
-    private var angleProgressArc = 0f
+    private var angleProgressArcInDegree = 0f
+    private var progress = MIN_PROGRESS
 
-    private var progress = 0f
-
-    var valueFrom: Float = 0f // todo reset to -1
+    var valueFrom: Float = -1f
         set(value) {
             if (value > valueTo) throw IllegalArgumentException("valueFrom must be less than valueTo")
             field = value
         }
 
-    var valueTo: Float = 100f // todo reset to 0
+    var valueTo: Float = 0f
 
     var value: Float = 0f
         set(value) {
-            val oldProgress = progress
-            progress = value * DIVIDEND / interval
-            if (needAnimate) animateProgressChanging(oldProgress, progress)
-            else {
-                if (animator?.isStarted == true) animator?.cancel()
-                updatePositions(progress)
-            }
-
+            updateProgressValue(value)
             field = value
         }
-        get() = progress * interval / DIVIDEND
 
     private val pathWidth = resources.getDimension(R.dimen.path_width)
     private val thumbRadius = resources.getDimension(R.dimen.thumb_radius)
@@ -85,12 +76,11 @@ class CircleProgressBar @JvmOverloads constructor(
         val width = getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
         val height = getDefaultSize(suggestedMinimumHeight, heightMeasureSpec)
         val min = max(width, height)
-        radius = min / 2f - pathWidth
+        radius = min / 2f - getAdditionalOffset()
         centerX = (width - paddingStart - paddingEnd) / 2f
         centerY = (height - paddingStart - paddingEnd) / 2f
 
         setMeasuredDimension(min, min)
-
         updateThumbPosition(progress)
     }
 
@@ -98,14 +88,14 @@ class CircleProgressBar @JvmOverloads constructor(
         canvas?.drawCircle(centerX, centerY, radius, pathPaint)
         canvas?.drawCircle(thumbX, thumbY, thumbRadius, thumbPaint)
 
-        val start = paddingStart + pathWidth
-        val top = paddingTop + pathWidth
-        val end = width.toFloat() - pathWidth
-        val bottom = height.toFloat() - pathWidth
+        val start = paddingStart + getAdditionalOffset()
+        val top = paddingTop + getAdditionalOffset()
+        val end = width.toFloat() - getAdditionalOffset()
+        val bottom = height.toFloat() - getAdditionalOffset()
 
         canvas?.drawArc(
             start, top, end, bottom,
-            -90f, angleProgressArc, false, linePaint
+            -90f, angleProgressArcInDegree, false, linePaint
         )
     }
 
@@ -142,7 +132,7 @@ class CircleProgressBar @JvmOverloads constructor(
     }
 
     private fun updateProgressPath(currProgress: Float) {
-        angleProgressArc = currProgress / DIVIDEND * FULL_ANGLE
+        angleProgressArcInDegree = currProgress / DIVIDEND * FULL_ANGLE
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -181,6 +171,25 @@ class CircleProgressBar @JvmOverloads constructor(
         return h / slope
     }
 
+    private fun getAdditionalOffset() = max(pathWidth, thumbRadius)
+
+    private fun updateProgressValue(value: Float) {
+        val oldProgress = progress
+        val newProgress = value * DIVIDEND / interval
+
+        progress = if (newProgress >= MAX_PROGRESS) {
+            MAX_PROGRESS
+        } else {
+            newProgress
+        }
+
+        if (needAnimate) animateProgressChanging(oldProgress, progress)
+        else {
+            if (animator?.isStarted == true) animator?.cancel()
+            updatePositions(progress)
+        }
+    }
+
     companion object {
         private const val DIVIDEND = 100.0f
         private const val FULL_ANGLE = 360f
@@ -188,5 +197,7 @@ class CircleProgressBar @JvmOverloads constructor(
         private const val RADIAN = 180f / Math.PI
 
         private const val ANIM_DURATION = 300L
+        private const val MAX_PROGRESS = 100f
+        private const val MIN_PROGRESS = 0f
     }
 }

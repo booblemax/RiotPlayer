@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="path_width">8dp</dimen>
+    <dimen name="path_width">6dp</dimen>
     <dimen name="thumb_radius">8dp</dimen>
 
 </resources>

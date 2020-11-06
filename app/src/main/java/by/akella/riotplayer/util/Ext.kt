@@ -90,6 +90,7 @@ fun AppCompatImageView.loadAlbumIcon(
 ) {
     Glide.with(this)
         .asBitmap()
+        .optionalCircleCrop()
         .load(albumIconPath)
         .error(default)
         .addListener(object : RequestListener<Bitmap> {
