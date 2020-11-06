@@ -1,15 +1,16 @@
 package by.akella.riotplayer.ui.custom
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import androidx.core.content.res.ResourcesCompat
 import by.akella.riotplayer.R
-import java.lang.Math.pow
-import java.lang.Math.sqrt
+import by.akella.riotplayer.util.info
 import kotlin.math.acos
 import kotlin.math.ceil
 import kotlin.math.cos
@@ -25,34 +26,44 @@ class CircleProgressBar @JvmOverloads constructor(
     defAttrs: Int = 0
 ) : View(context, attrs, defAttrs) {
 
+    private var animator: ValueAnimator? = null
+    private var needAnimate: Boolean = false
+
     private var centerX: Float = 0f
     private var centerY: Float = 0f
 
     private var thumbX = 0f
     private var thumbY = 0f
 
+    private var angleProgressArc = 0f
+
     private var progress = 0f
 
-    var valueFrom: Long = 0 // todo reset to -1
+    var valueFrom: Float = 0f // todo reset to -1
         set(value) {
             if (value > valueTo) throw IllegalArgumentException("valueFrom must be less than valueTo")
             field = value
         }
 
-    var valueTo: Long = 100 // todo reset to 0
+    var valueTo: Float = 100f // todo reset to 0
 
-    var value: Long = 0
+    var value: Float = 0f
         set(value) {
-            progress = ceil(value * DIVIDEND / interval).toFloat()
-            updateThumbPosition()
+            val oldProgress = progress
+            progress = value * DIVIDEND / interval
+            if (needAnimate) animateProgressChanging(oldProgress, progress)
+            else {
+                if (animator?.isStarted == true) animator?.cancel()
+                updatePositions(progress)
+            }
+
             field = value
-            invalidate()
         }
-        get() = ceil(progress * interval / DIVIDEND).toLong()
+        get() = progress * interval / DIVIDEND
 
     private val pathWidth = resources.getDimension(R.dimen.path_width)
     private val thumbRadius = resources.getDimension(R.dimen.thumb_radius)
-    private val interval: Long get() = valueTo - valueFrom
+    private val interval: Float get() = valueTo - valueFrom
 
     private val pathPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ResourcesCompat.getColor(resources, R.color.pink_light, context.theme)
@@ -65,7 +76,6 @@ class CircleProgressBar @JvmOverloads constructor(
         style = Paint.Style.STROKE
         strokeWidth = pathWidth
     }
-
     private val thumbPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ResourcesCompat.getColor(resources, R.color.pink, context.theme)
         style = Paint.Style.FILL
@@ -81,8 +91,9 @@ class CircleProgressBar @JvmOverloads constructor(
         centerX = (width - paddingStart - paddingEnd) / 2f
         centerY = (height - paddingStart - paddingEnd) / 2f
 
-        updateThumbPosition()
         setMeasuredDimension(min, min)
+
+        updateThumbPosition(progress)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -96,14 +107,44 @@ class CircleProgressBar @JvmOverloads constructor(
 
         canvas?.drawArc(
             start, top, end, bottom,
-            -90f, (progress / DIVIDEND * FULL_ANGLE).toFloat(), false, linePaint)
+            -90f, angleProgressArc, false, linePaint
+        )
     }
 
-    private fun updateThumbPosition() {
-        val angle = progress / DIVIDEND * FULL_ANGLE - 90
-        val rads = angle * Math.PI / HALF_ANGLE
+    private fun animateProgressChanging(oldProgress: Float, newProgress: Float) {
+        if (animator?.isStarted == true) animator?.cancel()
+
+        animator = ValueAnimator.ofFloat(oldProgress, newProgress).apply {
+            duration = ANIM_DURATION
+            interpolator = DecelerateInterpolator()
+            addUpdateListener {
+                val currProgressValue = it.animatedValue as Float
+                updatePositions(currProgressValue)
+            }
+        }
+        animator?.start()
+    }
+
+    private fun updatePositions(currProgress: Float) {
+        updateThumbPosition(currProgress)
+        updateProgressPath(currProgress)
+
+        invalidate()
+    }
+
+    private fun updateThumbPosition(currProgress: Float) {
+        val rads = calculateProgressAngleInRadian(currProgress)
         thumbX = (measuredWidth / 2 + r * cos(rads)).toFloat()
         thumbY = (measuredHeight / 2 + r * sin(rads)).toFloat()
+    }
+
+    private fun calculateProgressAngleInRadian(progress: Float): Double {
+        val angle = progress / DIVIDEND * FULL_ANGLE - 90
+        return angle * Math.PI / HALF_ANGLE
+    }
+
+    private fun updateProgressPath(currProgress: Float) {
+        angleProgressArc = currProgress / DIVIDEND * FULL_ANGLE
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -112,11 +153,15 @@ class CircleProgressBar @JvmOverloads constructor(
         val x = event.x
         val y = event.y
 
-        if (event.action == MotionEvent.ACTION_MOVE || isTouch(x, y)) {
+        if ((event.action == MotionEvent.ACTION_MOVE ||
+                    event.action == MotionEvent.ACTION_DOWN) && isTouch(x, y)) {
+            needAnimate = event.action == MotionEvent.ACTION_DOWN
+            info("event ${event.action}")
             val cos = computeCos(x, y)
-            val angle = if (x < width / 2) Math.PI * RADIAN + acos(cos) * RADIAN
-                        else Math.PI * RADIAN - acos(cos) * RADIAN
-            value = round(valueTo * angle / 360).toLong()
+            val angle =
+                if (x < width / 2) Math.PI * RADIAN + acos(cos) * RADIAN
+                else Math.PI * RADIAN - acos(cos) * RADIAN
+            value = (valueTo * angle / 360).toFloat()
 
             return true
         }
@@ -124,6 +169,7 @@ class CircleProgressBar @JvmOverloads constructor(
         return super.onTouchEvent(event)
     }
 
+    //todo refactor to isTouch on only circle
     private fun isTouch(x: Float, y: Float): Boolean {
         val radius = (width - paddingStart - paddingEnd + pathWidth) / 2
         return (centerX - x).pow(2) + (centerY - y).pow(2) < radius * radius
@@ -137,9 +183,11 @@ class CircleProgressBar @JvmOverloads constructor(
     }
 
     companion object {
-        private const val DIVIDEND = 100.0
+        private const val DIVIDEND = 100.0f
         private const val FULL_ANGLE = 360f
         private const val HALF_ANGLE = 180f
         private const val RADIAN = 180f / Math.PI
+
+        private const val ANIM_DURATION = 300L
     }
 }
