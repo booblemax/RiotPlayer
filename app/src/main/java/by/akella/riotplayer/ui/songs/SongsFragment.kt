@@ -26,7 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.EasyPermissions
 
 @AndroidEntryPoint
-class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
+class SongsFragment : BaseFragment() {
 
     private val viewModel: SongsViewModel by viewModels()
     private lateinit var binding: ItemsFragmentBinding
@@ -103,32 +103,22 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun load() {
-        if (EasyPermissions.hasPermissions(
-                requireContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        ) {
+//        if (EasyPermissions.hasPermissions(
+//                requireContext(),
+//                Manifest.permission.READ_EXTERNAL_STORAGE
+//            )
+//        ) {
             val songTypePosition = arguments?.getInt(ARG_TAB_TYPE)
             viewModel.loadSongs(songTypePosition?.let { MusicType.values()[it] }
                 ?: MusicType.ALL_SONGS)
-        } else {
-            EasyPermissions.requestPermissions(
-                this,
-                "This app needs access to internal storage",
-                REQUEST_INTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        }
-    }
-
-    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
-        if (requestCode == REQUEST_INTERNAL_STORAGE) {
-            viewModel.loadSongs()
-        }
-    }
-
-    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-        view?.snack("Need permission to read music") { onBackPressed() }
+//        } else {
+//            EasyPermissions.requestPermissions(
+//                this,
+//                "This app needs access to internal storage",
+//                REQUEST_INTERNAL_STORAGE,
+//                Manifest.permission.READ_EXTERNAL_STORAGE
+//            )
+//        }
     }
 
     private fun navigateToPlayer(songUiModel: SongUiModel) {
@@ -141,7 +131,6 @@ class SongsFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     }
 
     companion object {
-        const val REQUEST_INTERNAL_STORAGE = 1000
         const val ARG_TAB_TYPE = "arg_tab_type"
 
         fun create(tabType: MusicType): Fragment = SongsFragment().apply {

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/mainFragment"
@@ -33,12 +33,22 @@
     <fragment
         android:id="@+id/albumDetailsFragment"
         android:name="by.akella.riotplayer.ui.albumdetails.AlbumDetailsFragment"
-        android:label="AlbumDetailsFragment" >
+        android:label="AlbumDetailsFragment"
+        tools:layout="@layout/album_details_fragment">
         <action
             android:id="@+id/action_albumDetailsFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
         <argument
             android:name="albumModel"
             app:argType="by.akella.riotplayer.repository.albums.AlbumModel" />
+    </fragment>
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="by.akella.riotplayer.ui.splash.SplashFragment"
+        android:label="SplashFragment"
+        tools:layout="@layout/splash_fragment">
+        <action
+            android:id="@+id/action_splashFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
     </fragment>
 </navigation>
