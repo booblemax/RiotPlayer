@@ -34,8 +34,9 @@ class SplashFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
 
     private fun render(state: SplashState) {
         when (state) {
-            is SplashState.Granted -> navigateToMain()
+            is SplashState.Granted -> viewModel.scanFiles()
             is SplashState.Decline -> showDialog()
+            is SplashState.Scanned -> navigateToMain()
             else -> {}
         }
     }

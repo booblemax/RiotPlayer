@@ -16,15 +16,9 @@ import com.babylon.orbit2.viewmodel.container
 class SongsViewModel @ViewModelInject constructor(
     dispatchersProvider: DispatcherProvider,
     private val songsRepository: SongsRepository
-) : BaseViewModel(dispatchersProvider), ContainerHost<SongsState, SongsSideEffect> {
+) : BaseViewModel(dispatchersProvider), ContainerHost<SongsState, Nothing> {
 
-    override val container: Container<SongsState, SongsSideEffect> = container(SongsState()) {
-        orbit {
-            sideEffect {
-                post(SongsSideEffect.ScanFiles)
-            }
-        }
-    }
+    override val container: Container<SongsState, Nothing> = container(SongsState())
 
     fun loadSongs(songType: MusicType? = null) = orbit {
         transformSuspend {

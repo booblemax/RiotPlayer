@@ -1,6 +1,5 @@
 package by.akella.riotplayer.ui.songs
 
-import android.Manifest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import by.akella.riotplayer.databinding.ItemsFragmentBinding
-import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
@@ -18,12 +16,10 @@ import by.akella.riotplayer.ui.main.MainFragmentDirections
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.gone
-import by.akella.riotplayer.util.snack
+import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.visible
-import com.babylon.orbit2.livedata.sideEffect
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
-import pub.devrel.easypermissions.EasyPermissions
 
 @AndroidEntryPoint
 class SongsFragment : BaseFragment() {
@@ -62,10 +58,12 @@ class SongsFragment : BaseFragment() {
         }
 
         viewModel.container.state.observe(viewLifecycleOwner) { render(it) }
-        viewModel.container.sideEffect.observe(viewLifecycleOwner) { processSideEffect(it) }
+
+        load()
     }
 
     private fun render(state: SongsState) {
+        info(state.toString())
         with(state) {
             if (loading) {
                 binding.progress.visible()
@@ -76,7 +74,8 @@ class SongsFragment : BaseFragment() {
                 binding.progress.gone()
 
                 if (viewModel.container.currentState.songType == MusicType.RECENTS &&
-                    songs.isNotEmpty()) {
+                    songs.isNotEmpty()
+                ) {
                     binding.clearHistory.visible()
                 }
 
@@ -94,31 +93,10 @@ class SongsFragment : BaseFragment() {
         error(state.toString())
     }
 
-    private fun processSideEffect(sideEffect: SongsSideEffect) {
-        if (sideEffect is SongsSideEffect.ScanFiles) {
-            val scanner = SingleMediaScanner(requireContext())
-            scanner.onScanComplete = { load() }
-            scanner.scan()
-        }
-    }
-
     private fun load() {
-//        if (EasyPermissions.hasPermissions(
-//                requireContext(),
-//                Manifest.permission.READ_EXTERNAL_STORAGE
-//            )
-//        ) {
-            val songTypePosition = arguments?.getInt(ARG_TAB_TYPE)
-            viewModel.loadSongs(songTypePosition?.let { MusicType.values()[it] }
-                ?: MusicType.ALL_SONGS)
-//        } else {
-//            EasyPermissions.requestPermissions(
-//                this,
-//                "This app needs access to internal storage",
-//                REQUEST_INTERNAL_STORAGE,
-//                Manifest.permission.READ_EXTERNAL_STORAGE
-//            )
-//        }
+        val songTypePosition = arguments?.getInt(ARG_TAB_TYPE)
+        viewModel.loadSongs(songTypePosition?.let { MusicType.values()[it] }
+            ?: MusicType.ALL_SONGS)
     }
 
     private fun navigateToPlayer(songUiModel: SongUiModel) {
