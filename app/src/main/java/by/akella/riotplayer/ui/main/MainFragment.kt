@@ -50,8 +50,7 @@ class MainFragment : BaseFragment() {
 
     private fun renderState(state: MainState) {
         if (state.playerConnected && state.playerDisplay) {
-            childFragmentManager.findFragmentByTag(PlayerMiniFragment.TAG)
-                ?.let { return }
+            childFragmentManager.findFragmentByTag(PlayerMiniFragment.TAG)?.let { return }
             childFragmentManager.beginTransaction()
                 .add(
                     R.id.player_container,
