@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.TimeUtils
@@ -32,11 +33,11 @@ class PlayerFragment : BaseFragment() {
     ): View? {
         binding = PlayerFragmentBinding.inflate(inflater, container, false)
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
-        binding.next.setOnClickListener { viewModel.next() }
-        binding.prev.setOnClickListener { viewModel.prev() }
+        binding.next.onSafeClick(SafeClickListener<Nothing> { viewModel.next() })
+        binding.prev.onSafeClick(SafeClickListener<Nothing> { viewModel.prev() })
+        binding.shuffle.onSafeClick(SafeClickListener<Nothing> { viewModel.shuffle() })
+        binding.repeat.onSafeClick(SafeClickListener<Nothing> { viewModel.repeat() })
         binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
-        binding.shuffle.onSafeClick(null, SafeClickListener { viewModel.shuffle() })
-        binding.repeat.onSafeClick(null, SafeClickListener { viewModel.repeat() })
         return binding.root
     }
 
@@ -44,28 +45,9 @@ class PlayerFragment : BaseFragment() {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
             with(state) {
                 song?.let {
-                    if (!isSameSong) {
-                        binding.songName.text = it.title
-                        binding.songArtist.text = it.artist
-                        binding.albumImage.loadAlbumIcon(
-                            it.albumArtPath,
-                            R.drawable.ic_musical_note
-                        ) { postponeEnterTransition() }
-                        binding.allPlayTime.text =
-                            TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
-
-                        val duration = it.duration / TimeUtils.MILLIS
-                        binding.progressBar.valueTo = duration.toFloat()
-                        binding.progressBar.valueFrom = 0f
-                    }
-
-                    binding.progressBar.value = currentPlayPosition / TimeUtils.MILLIS.toFloat()
-                    binding.currentPlayTime.text =
-                        TimeUtils.convertMillisToShortTime(
-                            requireContext(),
-                            currentPlayPosition
-                        )
+                    if (!isSameSong) renderSong(it)
                 }
+                renderPositionChanging(currentPlayPosition)
                 renderPlayPause(isPlaying)
                 renderShuffle(isShuffleEnabled)
                 renderRepeat(isRepeatEnabled)
@@ -73,6 +55,30 @@ class PlayerFragment : BaseFragment() {
         }
         viewModel.play(args.mediaId, MusicType.values()[args.musicType])
         startPostponedEnterTransition()
+    }
+
+    private fun renderSong(it: SongUiModel) {
+        binding.songName.text = it.title
+        binding.songArtist.text = it.artist
+        binding.albumImage.loadAlbumIcon(
+            it.albumArtPath,
+            R.drawable.ic_musical_note
+        ) { postponeEnterTransition() }
+        binding.allPlayTime.text =
+            TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
+
+        val duration = it.duration / TimeUtils.MILLIS
+        binding.progressBar.valueTo = duration.toFloat()
+        binding.progressBar.valueFrom = 0f
+    }
+
+    private fun renderPositionChanging(nextPosition: Long) {
+        binding.progressBar.value = nextPosition / TimeUtils.MILLIS.toFloat()
+        binding.currentPlayTime.text =
+            TimeUtils.convertMillisToShortTime(
+                requireContext(),
+                nextPosition
+            )
     }
 
     private fun renderPlayPause(isPlaying: Boolean) {

@@ -44,7 +44,7 @@ class PlayerMiniFragment : BaseFragment() {
             .setBlurRadius(20f)
             .setHasFixedTransformationMatrix(true)
 
-        binding.root.onSafeClick(null, SafeClickListener { navigateToPlayer() })
+        binding.root.onSafeClick(SafeClickListener<Nothing> { navigateToPlayer() })
 
         return binding.root
     }

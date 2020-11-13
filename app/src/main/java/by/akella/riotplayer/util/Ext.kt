@@ -72,7 +72,7 @@ fun View.animateGone() {
     animate().alpha(0f).start()
 }
 
-fun <T : Any?> View.onSafeClick(item: T? = null, listener: SafeClickListener<T>) {
+fun <T : Any?> View.onSafeClick(listener: SafeClickListener<T>, item: T? = null) {
     setOnClickListener { listener.invoke(item) }
 }
 
