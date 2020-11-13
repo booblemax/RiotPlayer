@@ -1,12 +1,12 @@
 package by.akella.riotplayer.ui.custom
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.SeekBar
 import androidx.appcompat.widget.AppCompatSeekBar
 import by.akella.riotplayer.R
 import kotlin.math.ceil
-import kotlin.math.floor
 
 class MusicProgressBar @JvmOverloads constructor(
     context: Context,
@@ -38,7 +38,7 @@ class MusicProgressBar @JvmOverloads constructor(
 
     init {
         setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) { }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
                 isTrackingStarted = true
@@ -51,8 +51,14 @@ class MusicProgressBar @JvmOverloads constructor(
         })
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     fun disableTouch() {
         setOnTouchListener { _, _ -> true }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun enableTouch() {
+        setOnTouchListener { _, e -> super.onTouchEvent(e) }
     }
 
     companion object {

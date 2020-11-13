@@ -1,6 +1,7 @@
 package by.akella.riotplayer.ui.custom
 
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -10,7 +11,6 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.content.res.ResourcesCompat
 import by.akella.riotplayer.R
-import by.akella.riotplayer.util.info
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.max
@@ -35,6 +35,8 @@ open class CircleProgressBar @JvmOverloads constructor(
 
     private var angleProgressArcInDegree = 0f
     private var progress = MIN_PROGRESS
+
+    var onTouchEnds: (Long) -> Unit = {}
 
     var valueFrom: Float = -1f
         set(value) {
@@ -135,26 +137,34 @@ open class CircleProgressBar @JvmOverloads constructor(
         angleProgressArcInDegree = currProgress / DIVIDEND * FULL_ANGLE
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return super.onTouchEvent(event)
 
         val x = event.x
         val y = event.y
 
-        if ((event.action == MotionEvent.ACTION_MOVE ||
-                    event.action == MotionEvent.ACTION_DOWN) && isTouchOnPathRegion(x, y)) {
-            needAnimate = event.action == MotionEvent.ACTION_DOWN
-            info("event ${event.action}")
-            val cos = computeCos(x, y)
-            val angle =
-                if (x < width / 2) Math.PI * RADIAN + acos(cos) * RADIAN
-                else Math.PI * RADIAN - acos(cos) * RADIAN
-            value = (valueTo * angle / 360).toFloat()
-
-            return true
+        return when {
+            (event.action == MotionEvent.ACTION_MOVE ||
+                    event.action == MotionEvent.ACTION_DOWN) && isTouchOnPathRegion(x, y) -> {
+                updateCurrentValue(x, y)
+                needAnimate = event.action == MotionEvent.ACTION_DOWN
+                true
+            }
+            event.action == MotionEvent.ACTION_UP && isTouchOnPathRegion(x, y) -> {
+                onTouchEnds(value.toLong())
+                true
+            }
+            else -> super.onTouchEvent(event)
         }
+    }
 
-        return super.onTouchEvent(event)
+    private fun updateCurrentValue(x: Float, y: Float) {
+        val cos = computeCos(x, y)
+        val angle =
+            if (x < width / 2) Math.PI * RADIAN + acos(cos) * RADIAN
+            else Math.PI * RADIAN - acos(cos) * RADIAN
+        value = (valueTo * angle / 360).toFloat()
     }
 
     private fun isTouchOnPathRegion(x: Float, y: Float): Boolean {

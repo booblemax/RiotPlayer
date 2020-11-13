@@ -34,7 +34,7 @@ class PlayerFragment : BaseFragment() {
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
         binding.next.setOnClickListener { viewModel.next() }
         binding.prev.setOnClickListener { viewModel.prev() }
-//        binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
+        binding.progressBar.onTouchEnds = { viewModel.seekTo(it * TimeUtils.MILLIS) }
         binding.shuffle.onSafeClick(null, SafeClickListener { viewModel.shuffle() })
         binding.repeat.onSafeClick(null, SafeClickListener { viewModel.repeat() })
         return binding.root

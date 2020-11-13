@@ -1,13 +1,10 @@
 package by.akella.riotplayer.util
 
+import android.net.Uri
 import android.provider.BaseColumns
 import android.provider.MediaStore
 
-val uri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-    MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-} else {
-    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-}
+val uri: Uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
 val baseMusicProjection = arrayOf(
     BaseColumns._ID, // 0
@@ -16,5 +13,5 @@ val baseMusicProjection = arrayOf(
     MediaStore.Audio.AlbumColumns.ALBUM, // 3
     MediaStore.Audio.AudioColumns.ARTIST_ID, // 4
     MediaStore.Audio.ArtistColumns.ARTIST, // 5
-    MediaStore.Audio.Media.DURATION // 6
+    MediaStore.MediaColumns.DURATION // 6
 )
