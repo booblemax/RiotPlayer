@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerMiniFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
 import by.akella.riotplayer.util.TimeUtils
@@ -52,24 +53,29 @@ class PlayerMiniFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
             with(state) {
-                song?.let {
-                    binding.title.text = it.title
-                    binding.artist.text = it.artist
-                    binding.albumArt.loadAlbumIcon(
-                        it.albumArtPath,
-                        R.drawable.ic_musical_note
-                    )
-                    val duration = it.duration / TimeUtils.MILLIS
-                    if (binding.progress.valueTo != duration) {
-                        binding.progress.valueTo = duration
-                        binding.progress.valueFrom = 0
-                    }
-                }
-
-                binding.progress.value = currentPlayPosition / TimeUtils.MILLIS
+                song?.let { if (!isSameSong) renderSong(it) }
+                renderPositionChanging(currentPlayPosition)
                 renderPlayPause(isPlaying)
             }
         }
+    }
+
+    private fun renderSong(song: SongUiModel) {
+        binding.title.text = song.title
+        binding.artist.text = song.artist
+        binding.albumArt.loadAlbumIcon(
+            song.albumArtPath,
+            R.drawable.ic_musical_note
+        )
+        val duration = song.duration / TimeUtils.MILLIS
+        if (binding.progress.valueTo != duration) {
+            binding.progress.valueTo = duration
+            binding.progress.valueFrom = 0
+        }
+    }
+
+    private fun renderPositionChanging(nextPosition: Long) {
+        binding.progress.value = nextPosition / TimeUtils.MILLIS
     }
 
     private fun renderPlayPause(isPlaying: Boolean) {
