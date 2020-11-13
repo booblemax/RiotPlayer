@@ -13,11 +13,8 @@ import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.TimeUtils
 import by.akella.riotplayer.util.animateGone
 import by.akella.riotplayer.util.animateVisible
-import by.akella.riotplayer.util.gone
-import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.loadAlbumIcon
 import by.akella.riotplayer.util.onSafeClick
-import by.akella.riotplayer.util.visible
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -45,7 +42,6 @@ class PlayerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
-//            info(state.toString())
             with(state) {
                 song?.let {
                     if (!isSameSong) {
@@ -54,16 +50,16 @@ class PlayerFragment : BaseFragment() {
                         binding.albumImage.loadAlbumIcon(
                             it.albumArtPath,
                             R.drawable.ic_musical_note
-                        )
+                        ) { postponeEnterTransition() }
                         binding.allPlayTime.text =
                             TimeUtils.convertMillisToShortTime(requireContext(), it.duration)
 
                         val duration = it.duration / TimeUtils.MILLIS
-                        binding.progressBar.valueTo = duration
-                        binding.progressBar.valueFrom = 0
+                        binding.progressBar.valueTo = duration.toFloat()
+                        binding.progressBar.valueFrom = 0f
                     }
 
-                    binding.progressBar.value = currentPlayPosition / TimeUtils.MILLIS
+                    binding.progressBar.value = currentPlayPosition / TimeUtils.MILLIS.toFloat()
                     binding.currentPlayTime.text =
                         TimeUtils.convertMillisToShortTime(
                             requireContext(),
@@ -75,8 +71,8 @@ class PlayerFragment : BaseFragment() {
                 renderRepeat(isRepeatEnabled)
             }
         }
-
         viewModel.play(args.mediaId, MusicType.values()[args.musicType])
+        startPostponedEnterTransition()
     }
 
     private fun renderPlayPause(isPlaying: Boolean) {

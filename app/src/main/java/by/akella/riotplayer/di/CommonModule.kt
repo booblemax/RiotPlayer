@@ -11,6 +11,7 @@ import by.akella.riotplayer.repository.albums.AlbumRepository
 import by.akella.riotplayer.repository.albums.AlbumRepositoryImpl
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.repository.songs.SongsRepositoryImpl
+import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.service.RiotMusicService
 import dagger.Module
 import dagger.Provides
@@ -48,4 +49,7 @@ class CommonModule {
 
     @Provides
     fun provideDispatcherProvider(): DispatcherProvider = DefaultDispatcherProvider()
+
+    @Provides
+    fun provideSingleMediaScanner(@ApplicationContext context: Context): SingleMediaScanner = SingleMediaScanner(context)
 }

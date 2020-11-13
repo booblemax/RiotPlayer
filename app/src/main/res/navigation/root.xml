@@ -49,6 +49,12 @@
         tools:layout="@layout/splash_fragment">
         <action
             android:id="@+id/action_splashFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
     </fragment>
+    <fragment
+        android:id="@+id/testFragment"
+        android:name="by.akella.riotplayer.ui.TestFragment"
+        android:label="TestFragment" />
 </navigation>

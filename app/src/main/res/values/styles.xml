@@ -26,11 +26,6 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="AlbumImage">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerRadius">20dp</item>
-    </style>
-
     <style name="Progress" parent="Widget.MaterialComponents.Slider">
         <item name="trackColorActive">@color/colorAccent</item>
         <item name="trackColorInactive">@color/pink_light</item>

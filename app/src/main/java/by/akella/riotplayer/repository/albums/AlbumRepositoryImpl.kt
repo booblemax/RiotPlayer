@@ -11,7 +11,7 @@ class AlbumRepositoryImpl(
 
     override suspend fun getAlbums(): List<AlbumModel> {
         val projection = arrayOf(
-            MediaStore.Audio.Albums.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Albums.ALBUM,
             MediaStore.Audio.Albums.ARTIST
         )

@@ -1,12 +1,12 @@
 package by.akella.riotplayer.ui.custom
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.SeekBar
 import androidx.appcompat.widget.AppCompatSeekBar
 import by.akella.riotplayer.R
 import kotlin.math.ceil
-import kotlin.math.floor
 
 class MusicProgressBar @JvmOverloads constructor(
     context: Context,
@@ -27,17 +27,18 @@ class MusicProgressBar @JvmOverloads constructor(
     var value: Long = 0
         set(value) {
             if (!isTrackingStarted) {
-                progress = ceil(value * DIVIDEND / getInterval()).toInt()
+                progress = ceil(value * DIVIDEND / interval).toInt()
             }
             field = value
         }
-        get() = ceil(progress * getInterval() / DIVIDEND).toLong()
+        get() = ceil(progress * interval / DIVIDEND).toLong()
 
     private var isTrackingStarted = false
+    private val interval: Long get() = valueTo - valueFrom
 
     init {
         setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) { }
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
                 isTrackingStarted = true
@@ -50,10 +51,14 @@ class MusicProgressBar @JvmOverloads constructor(
         })
     }
 
-    private fun getInterval(): Long = valueTo - valueFrom
-
+    @SuppressLint("ClickableViewAccessibility")
     fun disableTouch() {
         setOnTouchListener { _, _ -> true }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun enableTouch() {
+        setOnTouchListener { _, e -> super.onTouchEvent(e) }
     }
 
     companion object {

@@ -4,4 +4,5 @@ sealed class SplashState {
     object Initial : SplashState()
     object Granted : SplashState()
     object Decline : SplashState()
+    object Scanned : SplashState()
 }
