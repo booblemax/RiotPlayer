@@ -51,12 +51,20 @@ class AlbumsFragment : BaseFragment() {
                 binding.emptyText.gone()
             } else {
                 binding.progress.gone()
-                if (it.albums.isEmpty()) {
-                    binding.items.gone()
-                    binding.emptyText.visible()
-                } else {
-                    binding.items.visible()
-                    binding.emptyText.gone()
+
+                when {
+                    it.albums == null -> {
+                        binding.items.gone()
+                        binding.emptyText.gone()
+                    }
+                    it.albums.isEmpty() -> {
+                        binding.items.gone()
+                        binding.emptyText.visible()
+                    }
+                    else -> {
+                        binding.items.visible()
+                        binding.emptyText.gone()
+                    }
                 }
             }
 

@@ -286,6 +286,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                 mediaId?.let {
                     try {
                         saveSongIntoHistory(mediaId)
+
                         val songModel = songsRepository.getSong(mediaId)
                         val currentSong = queueManager.getCurrentSong()
 
