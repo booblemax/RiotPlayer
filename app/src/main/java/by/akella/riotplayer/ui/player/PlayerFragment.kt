@@ -14,7 +14,7 @@ import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.util.TimeUtils
 import by.akella.riotplayer.util.animateGone
 import by.akella.riotplayer.util.animateVisible
-import by.akella.riotplayer.util.loadAlbumIcon
+import by.akella.riotplayer.util.loadAlbumIconCircle
 import by.akella.riotplayer.util.onSafeClick
 import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,7 +60,7 @@ class PlayerFragment : BaseFragment() {
     private fun renderSong(it: SongUiModel) {
         binding.songName.text = it.title
         binding.songArtist.text = it.artist
-        binding.albumImage.loadAlbumIcon(
+        binding.albumImage.loadAlbumIconCircle(
             it.albumArtPath,
             R.drawable.ic_musical_note
         ) { postponeEnterTransition() }

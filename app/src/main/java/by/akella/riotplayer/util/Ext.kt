@@ -90,6 +90,40 @@ fun AppCompatImageView.loadAlbumIcon(
 ) {
     Glide.with(this)
         .asBitmap()
+        .load(albumIconPath)
+        .error(default)
+        .addListener(object : RequestListener<Bitmap> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Bitmap>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                action()
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Bitmap?,
+                model: Any?,
+                target: Target<Bitmap>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                action()
+                return false
+            }
+        })
+        .into(this)
+}
+
+fun AppCompatImageView.loadAlbumIconCircle(
+    albumIconPath: String,
+    @DrawableRes default: Int,
+    action: () -> Unit = {}
+) {
+    Glide.with(this)
+        .asBitmap()
         .optionalCircleCrop()
         .load(albumIconPath)
         .error(default)
