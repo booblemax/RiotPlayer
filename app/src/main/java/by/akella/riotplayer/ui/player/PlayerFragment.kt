@@ -44,17 +44,15 @@ class PlayerFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
             with(state) {
-                song?.let {
-                    if (!isSameSong) renderSong(it)
-                }
+                song?.let { renderSong(it) }
                 renderPositionChanging(currentPlayPosition)
                 renderPlayPause(isPlaying)
                 renderShuffle(isShuffleEnabled)
                 renderRepeat(isRepeatEnabled)
             }
         }
-        viewModel.play(args.mediaId, MusicType.values()[args.musicType])
         startPostponedEnterTransition()
+        play()
     }
 
     private fun renderSong(it: SongUiModel) {
@@ -111,5 +109,9 @@ class PlayerFragment : BaseFragment() {
                 R.drawable.ic_repeat_inactive
             }
         )
+    }
+
+    private fun play() {
+        viewModel.play(args.mediaId, MusicType.values()[args.musicType])
     }
 }

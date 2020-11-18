@@ -2,20 +2,16 @@ package by.akella.riotplayer.util
 
 import android.app.Activity
 import android.graphics.Bitmap
-import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Build
 import android.view.View
-import android.view.WindowManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
-import by.akella.riotplayer.R
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -123,15 +119,14 @@ fun AppCompatImageView.loadAlbumIconCircle(
     action: () -> Unit = {}
 ) {
     Glide.with(this)
-        .asBitmap()
-        .optionalCircleCrop()
         .load(albumIconPath)
         .error(default)
-        .addListener(object : RequestListener<Bitmap> {
+        .optionalCircleCrop()
+        .addListener(object : RequestListener<Drawable> {
             override fun onLoadFailed(
                 e: GlideException?,
                 model: Any?,
-                target: Target<Bitmap>?,
+                target: Target<Drawable>?,
                 isFirstResource: Boolean
             ): Boolean {
                 action()
@@ -139,9 +134,9 @@ fun AppCompatImageView.loadAlbumIconCircle(
             }
 
             override fun onResourceReady(
-                resource: Bitmap?,
+                resource: Drawable?,
                 model: Any?,
-                target: Target<Bitmap>?,
+                target: Target<Drawable>?,
                 dataSource: DataSource?,
                 isFirstResource: Boolean
             ): Boolean {

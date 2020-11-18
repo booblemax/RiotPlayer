@@ -53,7 +53,7 @@ class PlayerMiniFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.state.observe(viewLifecycleOwner) { state ->
             with(state) {
-                song?.let { if (!isSameSong) renderSong(it) }
+                song?.let { renderSong(it) }
                 renderPositionChanging(currentPlayPosition)
                 renderPlayPause(isPlaying)
             }
