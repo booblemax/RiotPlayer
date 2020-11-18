@@ -74,17 +74,24 @@ class SongsFragment : BaseFragment() {
                 binding.progress.gone()
 
                 if (viewModel.container.currentState.songType == MusicType.RECENTS &&
-                    songs.isNotEmpty()
+                    !songs.isNullOrEmpty()
                 ) {
                     binding.clearHistory.visible()
                 }
 
-                if (songs.isEmpty()) {
-                    binding.items.gone()
-                    binding.emptyText.visible()
-                } else {
-                    binding.emptyText.gone()
-                    binding.items.visible()
+                when {
+                    songs == null -> {
+                        binding.items.gone()
+                        binding.emptyText.gone()
+                    }
+                    songs.isEmpty() -> {
+                        binding.items.gone()
+                        binding.emptyText.visible()
+                    }
+                    else -> {
+                        binding.emptyText.gone()
+                        binding.items.visible()
+                    }
                 }
             }
 

@@ -48,7 +48,7 @@ class AlbumDetailsFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = AlbumDetailsFragmentBinding.inflate(inflater, container, false)
-        binding.fabPlay.onSafeClick(null, SafeClickListener {
+        binding.fabPlay.onSafeClick(SafeClickListener<Nothing> {
             adapter.currentList.firstOrNull()?.let { navigateToPlayer(it.id) }
         })
         return binding.root

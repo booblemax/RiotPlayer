@@ -277,14 +277,16 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             val musicType =
                 extras?.getSerializable(RiotMediaController.ARG_MUSIC_TYPE) as? MusicType
 
-            if (musicType == this@RiotMusicService.musicType &&
-                queueManager.getCurrentSong()?.id == mediaId
-            ) {
+            val isSameMusicType = musicType == null || musicType == this@RiotMusicService.musicType
+            val isSameMedia = queueManager.getCurrentSong()?.id == mediaId
+
+            if (isSameMusicType && isSameMedia) {
                 playerController.playSong()
             } else {
                 mediaId?.let {
                     try {
                         saveSongIntoHistory(mediaId)
+
                         val songModel = songsRepository.getSong(mediaId)
                         val currentSong = queueManager.getCurrentSong()
 
