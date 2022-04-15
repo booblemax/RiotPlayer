@@ -279,30 +279,39 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             if (isSameMusicType && isSameMedia) {
                 playerController.playSong()
             } else {
-                mediaId?.let {
-                    try {
-                        saveSongIntoHistory(mediaId)
-
-                        val songModel = songsRepository.getSong(mediaId)
-                        val currentSong = queueManager.getCurrentSong()
-
-                        if (musicType != this@RiotMusicService.musicType ||
-                            currentSong?.album != songModel.album
-                        ) {
-                            this@RiotMusicService.musicType = musicType
-                            prepareQueue(songModel)
-                        } else {
-                            queueManager.setCurrentSong(it)
-                        }
-
-                        val mediaMetadata = songModel.toMediaMetadata()
-                        mediaSession.setMetadata(mediaMetadata)
-                        playerController.playSong(mediaMetadata)
-                    } catch (e: NoSuchElementException) {
-                        error(e.message.toString())
-                    }
-                }
+                mediaId?.let { prepareAndPlayMedia(it, musicType) }
             }
+        }
+    }
+
+    private fun prepareAndPlayMedia(mediaId: String, musicType: MusicType?) {
+        try {
+            saveSongIntoHistory(mediaId)
+
+            val songModel = songsRepository.getSong(mediaId)
+            val mediaMetadata = songModel.toMediaMetadata()
+
+            prepareQueue(mediaId, musicType, songModel)
+
+            mediaSession.setMetadata(mediaMetadata)
+            playerController.playSong(mediaMetadata)
+        } catch (e: NoSuchElementException) {
+            error(e.message.toString())
+        }
+    }
+
+    private fun prepareQueue(
+        mediaId: String, musicType: MusicType?, songModel: SongModel
+    ) {
+        val currentSong = queueManager.getCurrentSong()
+
+        if (musicType != this@RiotMusicService.musicType ||
+            currentSong?.album != songModel.album
+        ) {
+            this@RiotMusicService.musicType = musicType
+            prepareQueue(songModel)
+        } else {
+            queueManager.setCurrentSong(mediaId)
         }
     }
 
@@ -333,8 +342,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
     }
 
     companion object {
-        const val MY_MEDIA_ID = "media_id"
-        const val USER_AGENT = "riot.next"
-        private const val TAG = "MusicPlayer"
+        private const val MY_MEDIA_ID = "media_id"
     }
 }

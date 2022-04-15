@@ -1,5 +1,6 @@
 package by.akella.riotplayer.ui.player
 
+import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import androidx.core.os.bundleOf
@@ -25,6 +26,7 @@ import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     dispatcherProvider: DispatcherProvider,

@@ -84,8 +84,12 @@ class RiotMediaController @Inject constructor(
         if (isConnectedToMediaBrowser.value) {
             val mode = mediaController.shuffleMode
             transportControls.setShuffleMode(
-                if (mode == PlaybackStateCompat.SHUFFLE_MODE_ALL) PlaybackStateCompat.SHUFFLE_MODE_NONE
-                else PlaybackStateCompat.SHUFFLE_MODE_ALL
+                if (mode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                    PlaybackStateCompat.SHUFFLE_MODE_NONE
+                }
+                else {
+                    PlaybackStateCompat.SHUFFLE_MODE_ALL
+                }
             )
         }
     }
@@ -94,8 +98,12 @@ class RiotMediaController @Inject constructor(
         if (isConnectedToMediaBrowser.value) {
             val mode = mediaController.repeatMode
             transportControls.setRepeatMode(
-                if (mode == PlaybackStateCompat.REPEAT_MODE_ALL) PlaybackStateCompat.REPEAT_MODE_NONE
-                else PlaybackStateCompat.REPEAT_MODE_ALL
+                if (mode == PlaybackStateCompat.REPEAT_MODE_ALL) {
+                    PlaybackStateCompat.REPEAT_MODE_NONE
+                }
+                else {
+                    PlaybackStateCompat.REPEAT_MODE_ALL
+                }
             )
         }
     }
@@ -127,22 +135,26 @@ class RiotMediaController @Inject constructor(
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
 
         override fun onRepeatModeChanged(repeatMode: Int) {
-            info("${this::class.java.simpleName} Repeat Mode changed on ${repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL}")
+            info("${this::class.java.simpleName} Repeat Mode changed on" +
+                    " ${repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL}")
             _repeatMode.value = repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL
         }
 
         override fun onShuffleModeChanged(shuffleMode: Int) {
-            info("${this::class.java.simpleName} Shuffle Mode changed on ${shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL}")
+            info("${this::class.java.simpleName} Shuffle Mode changed on " +
+                    "${shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL}")
             _shuffleMode.value = shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            info("${this::class.java.simpleName} Playback State changed on ${state?.stateName}")
+            info("${this::class.java.simpleName} Playback State changed on" +
+                    " ${state?.stateName}")
             _playbackState.value = state ?: EMPTY_PLAYBACK_STATE
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            info("${this::class.java.simpleName} Metadata State changed on ${metadata?.print()}")
+            info("${this::class.java.simpleName} Metadata State changed on " +
+                    "${metadata?.print()}")
             _nowPlayingSong.value = metadata ?: NOTHING_TO_PLAY
         }
     }

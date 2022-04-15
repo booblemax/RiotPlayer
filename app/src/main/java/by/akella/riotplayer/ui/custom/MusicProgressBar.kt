@@ -38,7 +38,9 @@ class MusicProgressBar @JvmOverloads constructor(
 
     init {
         setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                //nothing to impl
+            }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
                 isTrackingStarted = true

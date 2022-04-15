@@ -66,7 +66,8 @@ class PlayerController(
         }
 
         playbackStateHelper.applyStopState()
-        player.stop(true)
+        player.clearMediaItems()
+        player.stop()
     }
 
     fun seekTo(pos: Long) {

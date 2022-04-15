@@ -10,7 +10,8 @@ data class MainState(
 ) {
 
     override fun toString(): String {
-        return "MainState(nowPlayingSong = ${nowPlayingSong}, playerConnected = $playerConnected, playerDisplay = $playerDisplay)"
+        return "MainState(nowPlayingSong = ${nowPlayingSong}, " +
+                "playerConnected = $playerConnected, playerDisplay = $playerDisplay)"
     }
 }
 

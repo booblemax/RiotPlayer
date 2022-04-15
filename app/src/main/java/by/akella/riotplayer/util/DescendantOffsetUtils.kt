@@ -1,3 +1,4 @@
+
 package by.akella.riotplayer.util
 
 import android.graphics.Matrix
@@ -10,6 +11,7 @@ import android.view.ViewParent
 object DescendantOffsetUtils {
     private val matrix = ThreadLocal<Matrix>()
     private val rectF = ThreadLocal<RectF>()
+    private const val OFFSET = 0.5f
 
     /**
      * This is a port of the common [ViewGroup.offsetDescendantRectToMyCoords] from
@@ -19,7 +21,7 @@ object DescendantOffsetUtils {
      * @param descendant view defining the original coordinate system of rect
      * @param rect (in/out) the rect to offset from descendant to this view's coordinate system
      */
-    fun offsetDescendantRect(
+    private fun offsetDescendantRect(
         parent: ViewGroup, descendant: View, rect: Rect
     ) {
         var m = matrix.get()
@@ -37,8 +39,8 @@ object DescendantOffsetUtils {
         }
         rectF.set(rect)
         m.mapRect(rectF)
-        rect[(rectF.left + 0.5f).toInt(), (rectF.top + 0.5f).toInt(), (rectF.right + 0.5f).toInt()] =
-            (rectF.bottom + 0.5f).toInt()
+        rect[(rectF.left + OFFSET).toInt(), (rectF.top + OFFSET).toInt(), (rectF.right + OFFSET).toInt()] =
+            (rectF.bottom + OFFSET).toInt()
     }
 
     /**

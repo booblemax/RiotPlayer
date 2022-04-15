@@ -13,7 +13,9 @@ data class PlayerState(
     val isShuffleEnabled: Boolean = false
 ) {
     override fun toString(): String {
-        return "PlayerState(isPlaying=$isPlaying, song=$song, isSameSong=$isSameSong, isPlaying=$isPlaying," +
-                " currentPlayPosition=$currentPlayPosition), isRepeatEnabled=$isRepeatEnabled, isShuffleEnabled=$isShuffleEnabled"
+        return "PlayerState(isPlaying=$isPlaying, song=$song, " +
+                "isSameSong=$isSameSong, isPlaying=$isPlaying," +
+                " currentPlayPosition=$currentPlayPosition), " +
+                "isRepeatEnabled=$isRepeatEnabled, isShuffleEnabled=$isShuffleEnabled"
     }
 }

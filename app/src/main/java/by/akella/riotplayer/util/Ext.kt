@@ -1,3 +1,4 @@
+@file:Suppress("TooManyFunctions")
 package by.akella.riotplayer.util
 
 import android.app.Activity
@@ -35,14 +36,6 @@ fun Activity.setupToolbar(toolbar: Toolbar) {
 }
 
 inline fun View.snack(
-    @StringRes messageRes: Int,
-    length: Int = Snackbar.LENGTH_LONG,
-    f: Snackbar.() -> Unit = {}
-) {
-    snack(resources.getString(messageRes), length, f)
-}
-
-inline fun View.snack(
     message: String,
     length: Int = Snackbar.LENGTH_LONG,
     f: Snackbar.() -> Unit = {}
@@ -60,12 +53,6 @@ fun View.visible() {
 
 fun View.animateVisible() {
     animate().alpha(1f).start()
-}
-
-fun View.invisible() {
-    if (visibility != View.INVISIBLE) {
-        visibility = View.INVISIBLE
-    }
 }
 
 fun View.gone() {

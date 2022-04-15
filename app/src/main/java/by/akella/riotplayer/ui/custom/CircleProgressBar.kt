@@ -18,6 +18,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+@Suppress("TooManyFunctions")
 open class CircleProgressBar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet,
@@ -97,7 +98,7 @@ open class CircleProgressBar @JvmOverloads constructor(
 
         canvas?.drawArc(
             start, top, end, bottom,
-            -90f, angleProgressArcInDegree, false, linePaint
+            -QUARTER_ANGLE, angleProgressArcInDegree, false, linePaint
         )
     }
 
@@ -129,7 +130,7 @@ open class CircleProgressBar @JvmOverloads constructor(
     }
 
     private fun calculateProgressAngleInRadian(progress: Float): Double {
-        val angle = progress / DIVIDEND * FULL_ANGLE - 90
+        val angle = progress / DIVIDEND * FULL_ANGLE - QUARTER_ANGLE
         return angle * Math.PI / HALF_ANGLE
     }
 
@@ -164,7 +165,7 @@ open class CircleProgressBar @JvmOverloads constructor(
         val angle =
             if (x < width / 2) Math.PI * RADIAN + acos(cos) * RADIAN
             else Math.PI * RADIAN - acos(cos) * RADIAN
-        value = (valueTo * angle / 360).toFloat()
+        value = (valueTo * angle / FULL_ANGLE).toFloat()
     }
 
     private fun isTouchOnPathRegion(x: Float, y: Float): Boolean {
@@ -202,6 +203,7 @@ open class CircleProgressBar @JvmOverloads constructor(
 
     companion object {
         private const val DIVIDEND = 100.0f
+        private const val QUARTER_ANGLE = 90f
         private const val FULL_ANGLE = 360f
         private const val HALF_ANGLE = 180f
         private const val RADIAN = 180f / Math.PI

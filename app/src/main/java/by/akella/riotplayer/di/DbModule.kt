@@ -23,5 +23,4 @@ class DbModule {
 
     @Provides
     fun provideSongDao(db: RiotDatabase): SongDao = db.songsDao
-
 }

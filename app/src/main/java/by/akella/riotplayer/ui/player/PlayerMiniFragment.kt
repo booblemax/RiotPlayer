@@ -48,8 +48,7 @@ class PlayerMiniFragment : BaseFragment() {
 
         binding.blur.setupWith(parentView)
             .setBlurAlgorithm(RenderScriptBlur(requireContext()))
-            .setBlurRadius(20f)
-            .setHasFixedTransformationMatrix(true)
+            .setBlurRadius(BLUR_RADIUS)
 
         binding.root.onSafeClick(SafeClickListener<Nothing> { navigateToPlayer() })
 
@@ -109,5 +108,7 @@ class PlayerMiniFragment : BaseFragment() {
 
     companion object {
         const val TAG = "PlayerMiniFragment"
+
+        private const val BLUR_RADIUS = 20f
     }
 }

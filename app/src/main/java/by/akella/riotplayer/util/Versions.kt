@@ -1,3 +1,4 @@
+@file:Suppress("TooManyFunctions")
 package by.akella.riotplayer.util
 
 import android.os.Build

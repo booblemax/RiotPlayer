@@ -51,5 +51,6 @@ class CommonModule {
     fun provideDispatcherProvider(): DispatcherProvider = DefaultDispatcherProvider()
 
     @Provides
-    fun provideSingleMediaScanner(@ApplicationContext context: Context): SingleMediaScanner = SingleMediaScanner(context)
+    fun provideSingleMediaScanner(@ApplicationContext context: Context): SingleMediaScanner =
+        SingleMediaScanner(context)
 }

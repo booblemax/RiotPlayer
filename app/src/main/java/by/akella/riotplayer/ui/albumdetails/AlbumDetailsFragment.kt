@@ -143,7 +143,7 @@ class AlbumDetailsFragment : BaseFragment() {
         ): Boolean {
             resource?.let {
                 Palette.Builder(resource)
-                    .maximumColorCount(16)
+                    .maximumColorCount(MAX_COLOR_COUNT)
                     .generate { p ->
                         val rgb = p?.dominantSwatch?.rgb
                         rgb?.let { color -> binding.collapsingLayout.setExpandedTitleColor(color) }
@@ -152,5 +152,10 @@ class AlbumDetailsFragment : BaseFragment() {
 
             return false
         }
+    }
+
+    companion object {
+
+        private const val MAX_COLOR_COUNT = 16
     }
 }
