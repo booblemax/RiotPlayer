@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import by.akella.riotplayer.dispatchers.DispatcherProvider
-import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import kotlinx.coroutines.CoroutineScope
@@ -40,19 +39,17 @@ class RiotNotificationManager(
     init {
         val mediaController = MediaControllerCompat(context, sessionToken)
 
-        notificationManager = PlayerNotificationManager.createWithNotificationChannel(
-            context,
-            NOTIFICATION_CHANNEL_ID,
-            R.string.notification_channel_name,
-            R.string.notification_channel_description,
-            NOW_PLAYING_NOTIFICATION_ID,
-            DescriptionAdapter(mediaController),
-            notificationListener
-        ).apply {
-            setMediaSessionToken(sessionToken)
-            setSmallIcon(R.drawable.ic_musical_note)
-            setControlDispatcher(DefaultControlDispatcher(0, 0))
-        }
+        notificationManager = PlayerNotificationManager
+            .Builder(context, NOW_PLAYING_NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
+            .setChannelNameResourceId(R.string.notification_channel_name)
+            .setChannelDescriptionResourceId(R.string.notification_channel_description)
+            .setMediaDescriptionAdapter(DescriptionAdapter(mediaController))
+            .setNotificationListener(notificationListener)
+            .build()
+            .apply {
+                setMediaSessionToken(sessionToken)
+                setSmallIcon(R.drawable.ic_musical_note)
+            }
     }
 
     fun showNotification(player: Player) {
@@ -97,15 +94,14 @@ class RiotNotificationManager(
             }
         }
 
-        private suspend fun retrieveBitmapFromUri(uri: Uri): Bitmap {
-            return withContext(dispatchersProvider.io()) {
+        private suspend fun retrieveBitmapFromUri(uri: Uri): Bitmap =
+            withContext(dispatchersProvider.io()) {
                 Glide.with(context).applyDefaultRequestOptions(glideOptions)
                     .asBitmap()
                     .load(uri)
                     .submit(NOTIFICATION_ICON_SIZE, NOTIFICATION_ICON_SIZE)
                     .get()
             }
-        }
 
         private val glideOptions = RequestOptions()
             .fallback(R.drawable.default_art)

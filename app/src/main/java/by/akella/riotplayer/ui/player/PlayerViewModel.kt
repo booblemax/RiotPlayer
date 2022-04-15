@@ -3,7 +3,7 @@ package by.akella.riotplayer.ui.player
 import android.os.Handler
 import android.os.Looper
 import androidx.core.os.bundleOf
-import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.viewModelScope
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.EMPTY_PLAYBACK_STATE
 import by.akella.riotplayer.media.RiotMediaController
@@ -15,15 +15,18 @@ import by.akella.riotplayer.util.isPlaying
 import by.akella.riotplayer.util.isSkipState
 import by.akella.riotplayer.util.isStop
 import by.akella.riotplayer.util.toSongUiModel
-import com.babylon.orbit2.Container
-import com.babylon.orbit2.ContainerHost
-import com.babylon.orbit2.reduce
-import com.babylon.orbit2.transform
-import com.babylon.orbit2.viewmodel.container
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.orbitmvi.orbit.Container
+import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.viewmodel.container
+import javax.inject.Inject
 
-class PlayerViewModel @ViewModelInject constructor(
+@HiltViewModel
+class PlayerViewModel @Inject constructor(
     dispatcherProvider: DispatcherProvider,
     private val riotMediaController: RiotMediaController
 ) : BaseViewModel(dispatcherProvider), ContainerHost<PlayerState, Nothing> {
@@ -55,31 +58,28 @@ class PlayerViewModel @ViewModelInject constructor(
 
     private fun initRepeatModeListener() {
         riotMediaController.repeatMode.onEach {
-            orbit {
-                transform { it }.reduce { state.copy(isRepeatEnabled = event) }
+            intent {
+                reduce { state.copy(isRepeatEnabled = it) }
             }
         }.launchIn(baseScope)
     }
 
     private fun initShuffleModeListener() {
         riotMediaController.shuffleMode.onEach {
-            orbit {
-                transform { it }.reduce { state.copy(isShuffleEnabled = event) }
+            intent {
+                reduce { state.copy(isShuffleEnabled = it) }
             }
         }.launchIn(baseScope)
     }
 
     private fun initPlaybackStateListener() {
         riotMediaController.playbackState.onEach { playbackState ->
-            orbit {
-                transform {
-                    this@PlayerViewModel.playbackState = playbackState
-                    playbackState
-                }.reduce {
+            intent {
+                reduce {
                     state.copy(
-                        isPlaying = event.isPlaying,
+                        isPlaying = playbackState.isPlaying,
                         currentPlayPosition =
-                        if (event.isStop) state.song?.duration ?: 0
+                        if (playbackState.isStop) state.song?.duration ?: 0
                         else state.currentPlayPosition
                     )
                 }
@@ -89,10 +89,9 @@ class PlayerViewModel @ViewModelInject constructor(
 
     private fun initNowPlayingSongListener() {
         riotMediaController.nowPlayingSong.onEach { media ->
-            orbit {
-                transform {
-                    media.toSongUiModel()
-                }.reduce {
+            intent {
+                reduce {
+                    val event = media.toSongUiModel()
                     val isSameSong = state.song?.id == event.id
                     state.copy(song = event, isSameSong = isSameSong, currentPlayPosition = 0)
                 }
@@ -105,19 +104,18 @@ class PlayerViewModel @ViewModelInject constructor(
             pause()
         } else {
             play(
-                container.currentState.song?.id ?: "",
-                container.currentState.musicType
+                container.stateFlow.value.song?.id ?: "",
+                container.stateFlow.value.musicType
             )
         }
     }
 
-    fun play(mediaId: String, musicType: MusicType? = null) = orbit {
-        transform {
-            riotMediaController.play(
-                mediaId,
-                bundleOf(RiotMediaController.ARG_MUSIC_TYPE to musicType)
-            )
-        }.reduce { state.copy(musicType = musicType) }
+    fun play(mediaId: String, musicType: MusicType? = null) = intent {
+        riotMediaController.play(
+            mediaId,
+            bundleOf(RiotMediaController.ARG_MUSIC_TYPE to musicType)
+        )
+        reduce { state.copy(musicType = musicType) }
     }
 
 
@@ -152,11 +150,10 @@ class PlayerViewModel @ViewModelInject constructor(
 
             resetSeekToPositionIfCan(playPosition)
             if (canApplyNewPosition(playPosition) && isValidState()) {
-                orbit {
-                    transform {
-                        getValidPosition(state, playPosition)
-                    }.reduce {
-                        state.copy(currentPlayPosition = playPosition)
+                intent {
+                    reduce {
+                        val validPosition = getValidPosition(state, playPosition)
+                        state.copy(currentPlayPosition = validPosition)
                     }
                 }
             }
@@ -166,7 +163,7 @@ class PlayerViewModel @ViewModelInject constructor(
     )
 
     private fun canApplyNewPosition(playPosition: Long) =
-        playPosition != container.currentState.currentPlayPosition &&
+        playPosition != container.stateFlow.value.currentPlayPosition &&
                 playPosition > seekToValue
 
     private fun isValidState() =

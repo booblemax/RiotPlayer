@@ -10,12 +10,13 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 
 class PlayerController(
     private val context: Context,
     private val playbackStateHelper: PlaybackStateHelper,
-    private val playerListener: Player.EventListener
+    private val playerListener: Player.Listener
 ) {
 
     private val myAudioAttributes = AudioAttributes.Builder()
@@ -24,18 +25,18 @@ class PlayerController(
         .build()
 
     val player: ExoPlayer by lazy {
-        SimpleExoPlayer.Builder(context).build().apply {
-            setAudioAttributes(myAudioAttributes, true)
-            setHandleAudioBecomingNoisy(true)
-            addListener(playerListener)
-        }
+        ExoPlayer
+            .Builder(context)
+            .build()
+            .apply {
+                setAudioAttributes(myAudioAttributes, true)
+                setHandleAudioBecomingNoisy(true)
+                addListener(playerListener)
+            }
     }
 
-    private val dataFactory: DefaultDataSourceFactory by lazy {
-        DefaultDataSourceFactory(
-            context,
-            RiotMusicService.USER_AGENT
-        )
+    private val dataFactory: DefaultDataSource.Factory by lazy {
+        DefaultDataSource.Factory(context)
     }
 
     fun playSong(media: MediaMetadataCompat? = null) {

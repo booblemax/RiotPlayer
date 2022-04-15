@@ -5,6 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.PlayerMiniFragmentBinding
@@ -12,13 +15,16 @@ import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
+import by.akella.riotplayer.ui.player.state.PlayerState
 import by.akella.riotplayer.util.TimeUtils
-import by.akella.riotplayer.util.info
+import by.akella.riotplayer.util.collectState
 import by.akella.riotplayer.util.loadAlbumIcon
 import by.akella.riotplayer.util.onSafeClick
-import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 import eightbitlab.com.blurview.RenderScriptBlur
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class PlayerMiniFragment : BaseFragment() {
@@ -51,12 +57,17 @@ class PlayerMiniFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.container.state.observe(viewLifecycleOwner) { state ->
-            with(state) {
-                song?.let { renderSong(it) }
-                renderPositionChanging(currentPlayPosition)
-                renderPlayPause(isPlaying)
-            }
+        viewModel.container.collectState(
+            viewLifecycleOwner,
+            ::renderState
+        )
+    }
+
+    private fun renderState(state: PlayerState) {
+        with(state) {
+            song?.let { renderSong(it) }
+            renderPositionChanging(currentPlayPosition)
+            renderPlayPause(isPlaying)
         }
     }
 
@@ -86,7 +97,7 @@ class PlayerMiniFragment : BaseFragment() {
     }
 
     private fun navigateToPlayer() {
-        viewModel.container.currentState.run {
+        viewModel.container.stateFlow.value.run {
             findNavController().navigate(
                 MainFragmentDirections.actionMainFragmentToPlayerFragment(
                     song?.id ?: "",

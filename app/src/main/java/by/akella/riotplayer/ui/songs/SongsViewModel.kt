@@ -1,40 +1,39 @@
 package by.akella.riotplayer.ui.songs
 
-import androidx.hilt.lifecycle.ViewModelInject
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.repository.songs.SongsRepository
 import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.main.state.MusicType
-import com.babylon.orbit2.Container
-import com.babylon.orbit2.ContainerHost
-import com.babylon.orbit2.coroutines.transformSuspend
-import com.babylon.orbit2.reduce
-import com.babylon.orbit2.sideEffect
-import com.babylon.orbit2.viewmodel.container
+import dagger.hilt.android.lifecycle.HiltViewModel
+import org.orbitmvi.orbit.Container
+import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.viewmodel.container
+import javax.inject.Inject
 
-class SongsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SongsViewModel @Inject constructor(
     dispatchersProvider: DispatcherProvider,
     private val songsRepository: SongsRepository
 ) : BaseViewModel(dispatchersProvider), ContainerHost<SongsState, Nothing> {
 
     override val container: Container<SongsState, Nothing> = container(SongsState())
 
-    fun loadSongs(songType: MusicType? = null) = orbit {
-        transformSuspend {
-            loadSongByType(songType).map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
-        }.reduce {
+    fun loadSongs(songType: MusicType? = null) = intent {
+        val songs = loadSongByType(songType).map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
+        reduce {
             state.copy(
                 songType = songType,
                 loading = false,
-                songs = event)
+                songs = songs)
         }
     }
 
-    fun clearHistory() = orbit {
-        transformSuspend {
-            songsRepository.clearRecent()
-        }.reduce {
+    fun clearHistory() = intent {
+        songsRepository.clearRecent()
+        reduce {
             state.copy(songs = emptyList())
         }
     }

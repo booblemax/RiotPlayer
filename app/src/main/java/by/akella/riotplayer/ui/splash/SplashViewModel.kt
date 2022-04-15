@@ -1,36 +1,30 @@
 package by.akella.riotplayer.ui.splash
 
-import androidx.hilt.lifecycle.ViewModelInject
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseViewModel
-import com.babylon.orbit2.Container
-import com.babylon.orbit2.ContainerHost
-import com.babylon.orbit2.reduce
-import com.babylon.orbit2.transform
-import com.babylon.orbit2.viewmodel.container
+import dagger.hilt.android.lifecycle.HiltViewModel
+import org.orbitmvi.orbit.Container
+import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.viewmodel.container
+import javax.inject.Inject
 
-class SplashViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SplashViewModel @Inject constructor(
     dispatcherProvider: DispatcherProvider,
     private val mediaScanner: SingleMediaScanner
 ) : BaseViewModel(dispatcherProvider), ContainerHost<SplashState, Nothing> {
 
     override val container: Container<SplashState, Nothing> = container(SplashState.Initial)
 
-    fun granted() = orbit {
-        transform { SplashState.Granted }.reduce { event }
-    }
+    fun granted() = intent { reduce { SplashState.Granted } }
 
-    fun decline() = orbit {
-        transform { SplashState.Decline }.reduce { event }
-    }
+    fun decline() = intent { reduce { SplashState.Decline } }
 
     fun scanFiles() {
         mediaScanner.scan()
-        mediaScanner.onScanComplete = {
-            orbit {
-                transform { SplashState.Scanned }.reduce { event }
-            }
-        }
+        mediaScanner.onScanComplete = { intent { reduce { SplashState.Scanned } } }
     }
 }

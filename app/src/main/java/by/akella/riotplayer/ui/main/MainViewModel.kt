@@ -8,15 +8,18 @@ import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.main.state.MainSideEffect
 import by.akella.riotplayer.ui.main.state.MainState
 import by.akella.riotplayer.util.toSongUiModel
-import com.babylon.orbit2.Container
-import com.babylon.orbit2.ContainerHost
-import com.babylon.orbit2.reduce
-import com.babylon.orbit2.transform
-import com.babylon.orbit2.viewmodel.container
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.orbitmvi.orbit.Container
+import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.viewmodel.container
+import javax.inject.Inject
 
-class MainViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MainViewModel @Inject constructor(
     dispatchersProvider: DispatcherProvider,
     private val riotMediaController: RiotMediaController
 ) : BaseViewModel(dispatchersProvider), ContainerHost<MainState, MainSideEffect> {
@@ -31,8 +34,11 @@ class MainViewModel @ViewModelInject constructor(
 
     private fun initNowPlayingSongListener() {
         riotMediaController.nowPlayingSong.onEach {
-            orbit {
-                transform { it.toSongUiModel() }.reduce { state.copy(nowPlayingSong = event) }
+            intent {
+                reduce {
+                    val event = it.toSongUiModel()
+                    state.copy(nowPlayingSong = event)
+                }
             }
         }.launchIn(baseScope)
     }
@@ -44,16 +50,16 @@ class MainViewModel @ViewModelInject constructor(
                 PlaybackStateCompat.STATE_ERROR -> false
                 else -> true
             }
-            orbit {
-                transform { stateForDisplay }.reduce { state.copy(playerDisplay = event) }
+            intent {
+                 reduce { state.copy(playerDisplay = stateForDisplay) }
             }
         }.launchIn(baseScope)
     }
 
     private fun initConnectionListener() {
         riotMediaController.isConnectedToMediaBrowser.onEach {
-            orbit {
-                transform { it }.reduce { state.copy(playerConnected = event) }
+            intent {
+                reduce { state.copy(playerConnected = it) }
             }
         }.launchIn(baseScope)
     }

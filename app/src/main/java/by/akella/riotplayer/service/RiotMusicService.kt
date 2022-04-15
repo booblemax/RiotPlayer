@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
+import android.drm.DrmErrorEvent.TYPE_OUT_OF_MEMORY
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -29,9 +30,11 @@ import by.akella.riotplayer.util.id
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.toMediaMetadata
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.scopes.ServiceScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -57,6 +60,7 @@ class RiotMusicService : MediaBrowserServiceCompat() {
 
     private val queueManager = QueueManager()
     private var musicType: MusicType? = null
+    private var playWhenReadyFlag: Boolean = false
 
     private val playerListener = PlayerEventListener()
 
@@ -78,12 +82,6 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             null
         ).apply {
             setSessionActivity(sessionActivityPendingIntent)
-
-            setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                        or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
-
             setCallback(MediaSessionCallback())
             isActive = true
         }
@@ -147,15 +145,19 @@ class RiotMusicService : MediaBrowserServiceCompat() {
         }
     }
 
-    private inner class PlayerEventListener : Player.EventListener {
+    private inner class PlayerEventListener : Player.Listener {
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            playWhenReadyFlag = playWhenReady
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
                     notificationManager.showNotification(playerController.player)
                     if (playbackState == Player.STATE_READY) {
-                        if (playWhenReady) {
+                        if (playWhenReadyFlag) {
                             stopForeground(false)
                         }
                     }
@@ -175,9 +177,10 @@ class RiotMusicService : MediaBrowserServiceCompat() {
             }
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
+        override fun onPlayerError(error: PlaybackException) {
             val message = R.string.generic_error
-            when (error.type) {
+            val exoPlayerException = error as? ExoPlaybackException
+            when (exoPlayerException?.type) {
                 // If the data from MediaSource object could not be loaded the Exoplayer raises
                 // a type_source error.
                 // An error message is printed to UI via Toast message to inform the user.
@@ -192,16 +195,9 @@ class RiotMusicService : MediaBrowserServiceCompat() {
                 ExoPlaybackException.TYPE_UNEXPECTED -> {
                     error("TYPE_UNEXPECTED: ${error.unexpectedException.message}")
                 }
-                // Occurs when there is a OutOfMemory error.
-                ExoPlaybackException.TYPE_OUT_OF_MEMORY -> {
-                    error("TYPE_OUT_OF_MEMORY: ${error.outOfMemoryError.message}")
-                }
                 // If the error occurs in a remote component, Exoplayer raises a type_remote error.
                 ExoPlaybackException.TYPE_REMOTE -> {
                     error("TYPE_REMOTE: ${error.message}")
-                }
-                ExoPlaybackException.TYPE_TIMEOUT -> {
-                    error("TYPE_TIMEOUT: ${error.message}")
                 }
             }
             Toast.makeText(

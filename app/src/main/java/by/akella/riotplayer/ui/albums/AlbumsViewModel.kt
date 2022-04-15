@@ -1,27 +1,32 @@
 package by.akella.riotplayer.ui.albums
 
-import androidx.hilt.lifecycle.ViewModelInject
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.repository.albums.AlbumRepository
 import by.akella.riotplayer.ui.base.BaseViewModel
-import com.babylon.orbit2.Container
-import com.babylon.orbit2.ContainerHost
-import com.babylon.orbit2.coroutines.transformSuspend
-import com.babylon.orbit2.reduce
-import com.babylon.orbit2.viewmodel.container
+import dagger.hilt.android.lifecycle.HiltViewModel
+import org.orbitmvi.orbit.Container
+import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.viewmodel.container
+import javax.inject.Inject
 
-class AlbumsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class AlbumsViewModel @Inject constructor(
     dispatcherProvider: DispatcherProvider,
     private val albumsRepository: AlbumRepository
 ) : BaseViewModel(dispatcherProvider), ContainerHost<AlbumsState, Nothing> {
 
+    init {
+        load()
+    }
+
     override val container: Container<AlbumsState, Nothing> = container(AlbumsState())
 
-    fun load() = orbit {
-        transformSuspend {
-            albumsRepository.getAlbums()
-        }.reduce {
-            state.copy(loading = false, albums = event)
+    private fun load() = intent {
+        val albums = albumsRepository.getAlbums()
+        reduce {
+            state.copy(loading = false, albums = albums)
         }
     }
 }

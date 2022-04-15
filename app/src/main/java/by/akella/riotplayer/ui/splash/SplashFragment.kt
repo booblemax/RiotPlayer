@@ -9,8 +9,8 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import by.akella.riotplayer.databinding.SplashFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.util.collectState
 import by.akella.riotplayer.util.snack
-import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.EasyPermissions
 
@@ -28,7 +28,10 @@ class SplashFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.container.state.observe(viewLifecycleOwner) { render(it) }
+        viewModel.container.collectState(
+            viewLifecycleOwner,
+            ::render
+        )
         load()
     }
 

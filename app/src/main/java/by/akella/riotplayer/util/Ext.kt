@@ -12,6 +12,10 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -19,6 +23,12 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import org.orbitmvi.orbit.Container
 
 fun Activity.setupToolbar(toolbar: Toolbar) {
     (this as AppCompatActivity).setSupportActionBar(toolbar)
@@ -145,4 +155,19 @@ fun AppCompatImageView.loadAlbumIconCircle(
             }
         })
         .into(this)
+}
+
+fun <STATE : Any, SIDE_EFFECT : Any> Container<STATE, SIDE_EFFECT>.collectState(
+    lifecycleOwner: LifecycleOwner,
+    block: suspend (state: STATE) -> Unit
+) {
+    with(lifecycleOwner) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                stateFlow
+                    .onEach(block)
+                    .launchIn(this)
+            }
+        }
+    }
 }

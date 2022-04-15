@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import by.akella.riotplayer.databinding.ItemsFragmentBinding
@@ -14,11 +15,11 @@ import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
 import by.akella.riotplayer.ui.main.state.MusicType
+import by.akella.riotplayer.util.collectState
 import by.akella.riotplayer.util.error
 import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.visible
-import com.babylon.orbit2.livedata.state
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -30,7 +31,7 @@ class SongsFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
-        val songType = viewModel.container.currentState.songType
+        val songType = viewModel.container.stateFlow.value.songType
         if (songType == MusicType.RECENTS) {
             viewModel.loadSongs(songType)
         }
@@ -57,7 +58,10 @@ class SongsFragment : BaseFragment() {
             adapter = this@SongsFragment.adapter
         }
 
-        viewModel.container.state.observe(viewLifecycleOwner) { render(it) }
+        viewModel.container.collectState(
+            viewLifecycleOwner,
+            ::render
+        )
 
         load()
     }
@@ -73,7 +77,7 @@ class SongsFragment : BaseFragment() {
             } else {
                 binding.progress.gone()
 
-                if (viewModel.container.currentState.songType == MusicType.RECENTS &&
+                if (viewModel.container.stateFlow.value.songType == MusicType.RECENTS &&
                     !songs.isNullOrEmpty()
                 ) {
                     binding.clearHistory.visible()
@@ -110,13 +114,13 @@ class SongsFragment : BaseFragment() {
         findNavController().navigate(
             MainFragmentDirections.actionMainFragmentToPlayerFragment(
                 songUiModel.id,
-                viewModel.container.currentState.songType?.ordinal ?: 0
+                viewModel.container.stateFlow.value.songType?.ordinal ?: 0
             )
         )
     }
 
     companion object {
-        const val ARG_TAB_TYPE = "arg_tab_type"
+        private const val ARG_TAB_TYPE = "arg_tab_type"
 
         fun create(tabType: MusicType): Fragment = SongsFragment().apply {
             arguments = Bundle().apply {

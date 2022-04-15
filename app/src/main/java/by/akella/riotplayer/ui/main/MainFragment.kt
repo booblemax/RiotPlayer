@@ -5,18 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.MainFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
-import by.akella.riotplayer.ui.base.model.SongUiModel
-import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.state.MainState
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.ui.player.PlayerMiniFragment
-import by.akella.riotplayer.util.onSafeClick
-import by.akella.riotplayer.util.warn
-import com.babylon.orbit2.livedata.state
+import by.akella.riotplayer.util.collectState
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -45,7 +42,10 @@ class MainFragment : BaseFragment() {
             }.attach()
         }
 
-        viewModel.container.state.observe(viewLifecycleOwner) { state -> renderState(state) }
+        viewModel.container.collectState(
+            viewLifecycleOwner,
+            ::renderState
+        )
     }
 
     private fun renderState(state: MainState) {

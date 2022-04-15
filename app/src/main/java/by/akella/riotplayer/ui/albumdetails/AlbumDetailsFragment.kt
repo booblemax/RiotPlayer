@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,12 +18,12 @@ import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.ui.songs.SongsAdapter
 import by.akella.riotplayer.util.TimeUtils
+import by.akella.riotplayer.util.collectState
 import by.akella.riotplayer.util.gone
 import by.akella.riotplayer.util.info
 import by.akella.riotplayer.util.onSafeClick
 import by.akella.riotplayer.util.visible
 import by.akella.riotplayer.util.waitForTransition
-import com.babylon.orbit2.livedata.state
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -46,7 +47,7 @@ class AlbumDetailsFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = AlbumDetailsFragmentBinding.inflate(inflater, container, false)
         binding.fabPlay.onSafeClick(SafeClickListener<Nothing> {
             adapter.currentList.firstOrNull()?.let { navigateToPlayer(it.id) }
@@ -68,7 +69,10 @@ class AlbumDetailsFragment : BaseFragment() {
             adapter = this@AlbumDetailsFragment.adapter
         }
         binding.toolbar.setNavigationOnClickListener { onBackPressed() }
-        viewModel.container.state.observe(viewLifecycleOwner, this::renderState)
+        viewModel.container.collectState(
+            viewLifecycleOwner,
+            this::renderState
+        )
         viewModel.loadSongs(args.albumModel)
         waitForTransition(binding.expandingImage)
     }
