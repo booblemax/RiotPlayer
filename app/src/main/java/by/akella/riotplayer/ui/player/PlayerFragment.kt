@@ -37,7 +37,7 @@ class PlayerFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = PlayerFragmentBinding.inflate(inflater, container, false)
         binding.playPause.setOnClickListener { viewModel.onPlayPauseClicked() }
         binding.next.onSafeClick(SafeClickListener<Nothing> { viewModel.next() })
@@ -72,7 +72,7 @@ class PlayerFragment : BaseFragment() {
         binding.songArtist.text = it.artist
         binding.albumImage.loadAlbumIconCircle(
             it.albumArtPath,
-            R.drawable.ic_musical_note
+            R.drawable.ic_album
         ) { postponeEnterTransition() }
         binding.allPlayTime.text =
             TimeUtils.convertMillisToShortTime(requireContext(), it.duration)

@@ -2,6 +2,7 @@ package by.akella.riotplayer.ui.albums
 
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.repository.albums.AlbumRepository
+import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.orbitmvi.orbit.Container
@@ -17,11 +18,11 @@ class AlbumsViewModel @Inject constructor(
     private val albumsRepository: AlbumRepository
 ) : BaseViewModel(dispatcherProvider), ContainerHost<AlbumsState, Nothing> {
 
+    override val container: Container<AlbumsState, Nothing> = container(AlbumsState())
+
     init {
         load()
     }
-
-    override val container: Container<AlbumsState, Nothing> = container(AlbumsState())
 
     private fun load() = intent {
         val albums = albumsRepository.getAlbums()

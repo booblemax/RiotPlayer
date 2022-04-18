@@ -24,7 +24,7 @@ class SplashViewModel @Inject constructor(
     fun decline() = intent { reduce { SplashState.Decline } }
 
     fun scanFiles() {
-        mediaScanner.scan()
         mediaScanner.onScanComplete = { intent { reduce { SplashState.Scanned } } }
+        mediaScanner.scan()
     }
 }

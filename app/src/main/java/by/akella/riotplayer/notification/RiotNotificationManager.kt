@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import by.akella.riotplayer.R
 import by.akella.riotplayer.util.albumArtUri
 import by.akella.riotplayer.util.artist
@@ -16,9 +18,11 @@ import com.bumptech.glide.request.RequestOptions
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 
 const val NOTIFICATION_CHANNEL_ID = "by.akella.riotplayer.media.now_playing"
@@ -33,7 +37,10 @@ class RiotNotificationManager(
 ) {
 
     private val job = SupervisorJob()
-    private val scope = CoroutineScope(job)
+    private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        error(throwable)
+    }
+    private val scope = CoroutineScope(job) + exceptionHandler
     private val notificationManager: PlayerNotificationManager
 
     init {
@@ -84,9 +91,8 @@ class RiotNotificationManager(
             return if (currentIconUri != iconUri || currentBitmap == null) {
                 currentIconUri = iconUri
                 scope.launch {
-                    currentBitmap = retrieveBitmapFromUri(iconUri).apply {
-                        callback.onBitmap(this)
-                    }
+                    currentBitmap = retrieveBitmapFromUri(iconUri)
+                    currentBitmap?.let { callback.onBitmap(it) }
                 }
                 null
             } else {
@@ -94,17 +100,26 @@ class RiotNotificationManager(
             }
         }
 
-        private suspend fun retrieveBitmapFromUri(uri: Uri): Bitmap =
+        private suspend fun retrieveBitmapFromUri(uri: Uri): Bitmap? =
             withContext(dispatchersProvider.io()) {
-                Glide.with(context).applyDefaultRequestOptions(glideOptions)
-                    .asBitmap()
-                    .load(uri)
-                    .submit(NOTIFICATION_ICON_SIZE, NOTIFICATION_ICON_SIZE)
-                    .get()
+                try {
+                    Glide.with(context).applyDefaultRequestOptions(glideOptions)
+                        .asBitmap()
+                        .load(uri)
+                        .submit(NOTIFICATION_ICON_SIZE, NOTIFICATION_ICON_SIZE)
+                        .get()
+                } catch (ex: Exception) {
+                    ResourcesCompat.getDrawable(
+                        context.resources,
+                        R.drawable.ic_album,
+                        context.theme
+                    )?.toBitmap(
+                        NOTIFICATION_ICON_SIZE, NOTIFICATION_ICON_SIZE
+                    )
+                }
             }
 
         private val glideOptions = RequestOptions()
-            .fallback(R.drawable.default_art)
             .diskCacheStrategy(DiskCacheStrategy.DATA)
     }
 }

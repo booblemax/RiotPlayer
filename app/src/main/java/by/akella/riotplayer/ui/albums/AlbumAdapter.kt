@@ -9,6 +9,7 @@ import by.akella.riotplayer.R
 import by.akella.riotplayer.databinding.ItemAlbumBinding
 import by.akella.riotplayer.repository.albums.AlbumModel
 import by.akella.riotplayer.ui.custom.SafeClickListener
+import by.akella.riotplayer.util.loadAlbumIcon
 import com.bumptech.glide.Glide
 
 class AlbumAdapter(
@@ -18,7 +19,7 @@ class AlbumAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
         val binding = ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return AlbumViewHolder(binding).apply {
-            itemView.setOnClickListener { onClick(getItem(adapterPosition)) }
+            itemView.setOnClickListener { onClick(getItem(bindingAdapterPosition)) }
         }
     }
 
@@ -41,13 +42,9 @@ class AlbumViewHolder(
 
     fun bind(album: AlbumModel) {
         with(binding) {
-            val context = albumName.context
             albumName.text = album.name
             albumArtist.text = album.artist
-
-            Glide.with(context)
-                .load(album.artUrl)
-                .into(albumImage)
+            albumImage.loadAlbumIcon(album.artUrl, R.drawable.ic_album)
         }
     }
 }

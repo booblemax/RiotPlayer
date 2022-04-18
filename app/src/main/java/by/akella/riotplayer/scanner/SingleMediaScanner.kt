@@ -3,9 +3,10 @@ package by.akella.riotplayer.scanner
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Environment
 
 class SingleMediaScanner(
-    context: Context,
+    private val context: Context,
 ) : MediaScannerConnection.MediaScannerConnectionClient {
 
     private val scanner = MediaScannerConnection(context, this)
@@ -17,7 +18,7 @@ class SingleMediaScanner(
     }
 
     override fun onMediaScannerConnected() {
-        scanner.scanFile("files://", null)
+        scanner.scanFile("files://sdcard/", null)
     }
 
     fun scan() {

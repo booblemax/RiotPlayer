@@ -4,6 +4,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.hilt.lifecycle.ViewModelInject
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.media.RiotMediaController
+import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.main.state.MainSideEffect
 import by.akella.riotplayer.ui.main.state.MainState
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     dispatchersProvider: DispatcherProvider,
-    private val riotMediaController: RiotMediaController
+    private val riotMediaController: RiotMediaController,
+    private val scanner: SingleMediaScanner
 ) : BaseViewModel(dispatchersProvider), ContainerHost<MainState, MainSideEffect> {
 
     override val container: Container<MainState, MainSideEffect> = container(MainState())
@@ -30,6 +32,10 @@ class MainViewModel @Inject constructor(
         initConnectionListener()
         initPlaybackStateListener()
         initNowPlayingSongListener()
+    }
+
+    fun rescan() {
+        scanner.scan()
     }
 
     private fun initNowPlayingSongListener() {

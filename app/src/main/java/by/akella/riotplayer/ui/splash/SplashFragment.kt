@@ -23,9 +23,7 @@ class SplashFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return SplashFragmentBinding.inflate(inflater, container, false).root
-    }
+    ): View = SplashFragmentBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.container.collectState(
