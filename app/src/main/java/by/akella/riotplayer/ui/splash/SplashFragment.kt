@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.MaterialTheme
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import by.akella.riotplayer.databinding.SplashComposeFragmentBinding
 import by.akella.riotplayer.databinding.SplashFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.util.AppConfig
 import by.akella.riotplayer.util.collectState
 import by.akella.riotplayer.util.snack
+import com.google.android.material.composethemeadapter.MdcTheme
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.EasyPermissions
 
@@ -23,19 +27,34 @@ class SplashFragment : BaseFragment(), EasyPermissions.PermissionCallbacks {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View = SplashFragmentBinding.inflate(inflater, container, false).root
+    ): View = if (AppConfig.isCompose) {
+        SplashComposeFragmentBinding.inflate(inflater, container, false)
+            .apply {
+                composeLayout.setContent {
+                    MdcTheme {
+                        SplashCompose(
+                            navigate = ::navigateToMain
+                        )
+                    }
+                }
+            }
+            .root
+    } else {
+        SplashFragmentBinding.inflate(inflater, container, false).root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.container.collectState(
-            viewLifecycleOwner,
-            ::render
-        )
-        load()
+        if (AppConfig.isCompose) {
+            viewModel.collectState(
+                viewLifecycleOwner,
+                ::render
+            )
+            load()
+        }
     }
 
     private fun render(state: SplashState) {
         when (state) {
-            is SplashState.Granted -> viewModel.scanFiles()
             is SplashState.Decline -> showDialog()
             is SplashState.Scanned -> navigateToMain()
             else -> {}

@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.Container
+import org.orbitmvi.orbit.ContainerHost
 
 fun Activity.setupToolbar(toolbar: Toolbar) {
     (this as AppCompatActivity).setSupportActionBar(toolbar)
@@ -152,6 +153,21 @@ fun <STATE : Any, SIDE_EFFECT : Any> Container<STATE, SIDE_EFFECT>.collectState(
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 stateFlow
+                    .onEach(block)
+                    .launchIn(this)
+            }
+        }
+    }
+}
+
+fun <STATE : Any, SIDE_EFFECT : Any> ContainerHost<STATE, SIDE_EFFECT>.collectState(
+    lifecycleOwner: LifecycleOwner,
+    block: suspend (state: STATE) -> Unit
+) {
+    with(lifecycleOwner) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                container.stateFlow
                     .onEach(block)
                     .launchIn(this)
             }

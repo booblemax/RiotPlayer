@@ -12,7 +12,7 @@ import org.orbitmvi.orbit.viewmodel.container
 import javax.inject.Inject
 
 @HiltViewModel
-class SplashViewModel @Inject constructor(
+class SplashComposeViewModel  @Inject constructor(
     dispatcherProvider: DispatcherProvider,
     private val mediaScanner: SingleMediaScanner
 ) : BaseViewModel(dispatcherProvider), ContainerHost<SplashState, Nothing> {
@@ -21,7 +21,7 @@ class SplashViewModel @Inject constructor(
 
     fun granted() = scanFiles()
 
-    fun decline() = intent { reduce { SplashState.Decline } }
+    fun declined() = intent { reduce { SplashState.Decline } }
 
     fun scanFiles() {
         mediaScanner.onScanComplete = { intent { reduce { SplashState.Scanned } } }
