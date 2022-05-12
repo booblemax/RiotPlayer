@@ -1,8 +1,9 @@
-package by.akella.riotplayer.ui.splash
+package by.akella.riotplayer.ui.splash.compose
 
 import by.akella.riotplayer.dispatchers.DispatcherProvider
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseViewModel
+import by.akella.riotplayer.ui.splash.SplashState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
@@ -23,7 +24,7 @@ class SplashComposeViewModel  @Inject constructor(
 
     fun declined() = intent { reduce { SplashState.Decline } }
 
-    fun scanFiles() {
+    private fun scanFiles() {
         mediaScanner.onScanComplete = { intent { reduce { SplashState.Scanned } } }
         mediaScanner.scan()
     }

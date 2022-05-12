@@ -1,4 +1,4 @@
-package by.akella.riotplayer.ui.splash
+package by.akella.riotplayer.ui.splash.compose
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import by.akella.riotplayer.R
+import by.akella.riotplayer.ui.splash.SplashState
 import com.google.android.material.composethemeadapter.MdcTheme
 
 @Composable

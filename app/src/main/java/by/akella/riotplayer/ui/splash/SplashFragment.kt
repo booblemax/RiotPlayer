@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.material.MaterialTheme
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import by.akella.riotplayer.databinding.SplashComposeFragmentBinding
 import by.akella.riotplayer.databinding.SplashFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
+import by.akella.riotplayer.ui.splash.compose.SplashCompose
 import by.akella.riotplayer.util.AppConfig
 import by.akella.riotplayer.util.collectState
 import by.akella.riotplayer.util.snack

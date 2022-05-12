@@ -6,7 +6,7 @@ import by.akella.riotplayer.ui.main.state.MusicType
 data class SongsState(
     val songType: MusicType? = null,
     val loading: Boolean = true,
-    val songs: List<SongUiModel>? = null
+    val songs: List<SongUiModel> = emptyList()
 ) {
 
     override fun toString(): String {
