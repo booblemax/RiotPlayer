@@ -4,5 +4,5 @@ import by.akella.riotplayer.repository.albums.AlbumModel
 
 data class AlbumsState(
     val loading: Boolean = false,
-    val albums: List<AlbumModel>? = null
+    val albums: List<AlbumModel> = emptyList()
 )

@@ -4,13 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.MaterialTheme
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import by.akella.riotplayer.R
+import by.akella.riotplayer.databinding.CommonComposeLayoutBinding
 import by.akella.riotplayer.databinding.MainFragmentBinding
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.custom.SafeClickListener
+import by.akella.riotplayer.ui.main.compose.MainScreenCompose
 import by.akella.riotplayer.ui.main.state.MainState
 import by.akella.riotplayer.ui.main.state.MusicType
 import by.akella.riotplayer.ui.player.PlayerMiniFragment
@@ -30,25 +33,32 @@ class MainFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = MainFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+//        binding = MainFragmentBinding.inflate(inflater, container, false)
+//        return binding.root
+        return CommonComposeLayoutBinding.inflate(inflater, container, false).apply {
+            composeLayout.setContent {
+                MaterialTheme {
+                    MainScreenCompose()
+                }
+            }
+        }.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(binding) {
-            pager.adapter = PagerAdapter(this@MainFragment)
-            TabLayoutMediator(tabs, pager) { tab, position ->
-                tab.text = getString(MusicType.values()[position].tabName)
-            }.attach()
-            reloadScan.onSafeClick(SafeClickListener<Nothing> { viewModel.rescan() })
-        }
-
-        viewModel.container.collectState(
-            viewLifecycleOwner,
-            ::renderState
-        )
+//        with(binding) {
+//            pager.adapter = PagerAdapter(this@MainFragment)
+//            TabLayoutMediator(tabs, pager) { tab, position ->
+//                tab.text = getString(MusicType.values()[position].tabName)
+//            }.attach()
+//            reloadScan.onSafeClick(SafeClickListener<Nothing> { viewModel.rescan() })
+//        }
+//
+//        viewModel.container.collectState(
+//            viewLifecycleOwner,
+//            ::renderState
+//        )
     }
 
     private fun renderState(state: MainState) {

@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -40,12 +39,23 @@ import by.akella.riotplayer.util.TimeUtils
 import coil.compose.AsyncImage
 
 @Composable
+fun AllSongsScreen() {
+    SongsScreen(songType = MusicType.ALL_SONGS)
+}
+
+@Composable
+fun RecentsSongsScreen() {
+    SongsScreen(songType = MusicType.RECENTS)
+}
+
+@Composable
 fun SongsScreen(
     songType: MusicType,
     viewModel: SongsViewModel = viewModel(),
     onItemClicked: (SongUiModel) -> Unit = { }
 ) {
-    val songsState by viewModel.container.stateFlow.collectAsState()
+    println(viewModel.toString())
+    val songsState by viewModel.stateFlow.collectAsState()
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -59,7 +69,7 @@ fun SongsScreen(
             songsState.songs.isEmpty() -> {
                 Text(
                     modifier = Modifier.align(Alignment.Center),
-                    text = "Empty List",
+                    text = if (songType == MusicType.ALL_SONGS) "No songs" else "No recent",
                     color = Color.White,
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold
@@ -67,10 +77,9 @@ fun SongsScreen(
             }
             else -> {
                 SongsList(
-                    Modifier.align(Alignment.TopEnd),
-                    songsState,
-                    { viewModel.clearHistory() },
-                    onItemClicked
+                    songsState = songsState,
+                    onClearHistoryClicked = { viewModel.clearHistory() },
+                    onItemClicked = onItemClicked
                 )
             }
         }
@@ -88,27 +97,44 @@ private fun SongsList(
     onClearHistoryClicked: () -> Unit = {},
     onItemClicked: (SongUiModel) -> Unit = {}
 ) {
-    if (songsState.songType == MusicType.RECENTS) {
-        Image(
-            modifier = modifier
-                .size(16.dp)
-                .padding(end = 24.dp, top = 12.dp)
-                .clickable { onClearHistoryClicked() },
-            painter = painterResource(id = R.drawable.ic_clear),
-            contentDescription = null
-        )
-    }
-    LazyColumn {
-        items(
-            songsState.songs,
-            key = { item -> item.id },
-            contentType = { songsState.songType }
-        ) {
-            SongItem(
-                modifier = Modifier.clickable { onItemClicked(it) },
-                song = it
-            )
+    Column(modifier = modifier.fillMaxSize()) {
+        if (songsState.songType == MusicType.RECENTS) {
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .clickable { onClearHistoryClicked() }
+                ,
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Clear History",
+                    color = Color.White,
+                    fontSize = 18.sp
+                )
+                Image(
+                    modifier = modifier
+                        .padding(start = 4.dp)
+                        .size(36.dp),
+                    painter = painterResource(id = R.drawable.ic_clear),
+                    contentDescription = null
+                )
+            }
         }
+        LazyColumn {
+            items(
+                songsState.songs,
+                key = { item -> item.id },
+                contentType = { songsState.songType }
+            ) {
+                SongItem(
+                    modifier = Modifier.clickable { onItemClicked(it) },
+                    song = it
+                )
+            }
+        }
+
     }
 }
 
@@ -120,7 +146,9 @@ fun SongItem(
     val context = LocalContext.current
 
     Box(
-        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
     ) {
         Row(
             modifier = modifier.fillMaxWidth(),
@@ -152,11 +180,13 @@ fun SongItem(
                     color = colorResource(R.color.pink_light)
                 )
             }
-            Text(
-                modifier = Modifier.padding(end = 12.dp),
-                text = TimeUtils.convertMillisToShortTime(context, song.duration),
-                color = Color.White
-            )
+            if (song.duration != 0L) {
+                Text(
+                    modifier = Modifier.padding(end = 12.dp),
+                    text = TimeUtils.convertMillisToShortTime(context, song.duration),
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -167,7 +197,7 @@ fun SongsListPreview() {
     MaterialTheme {
         SongsList(
             songsState = SongsState(
-                MusicType.ALL_SONGS,
+                MusicType.RECENTS,
                 true,
                 songs = listOf(
                     SongUiModel("id1", "Whore", "In This Moment", duration = 78000),

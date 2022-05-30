@@ -21,7 +21,7 @@ abstract class BaseViewModel(dispatcherProvider: DispatcherProvider) : ViewModel
 
     protected fun handleException(throwable: Throwable) {
         error(throwable)
-        viewModelScope
+        baseScope
     }
 
     fun runDelayed(timeDelay: Long = TIME_DELAYED_MILLIS, action: () -> Unit) {

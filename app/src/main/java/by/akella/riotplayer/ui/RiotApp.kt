@@ -1,6 +1,7 @@
 package by.akella.riotplayer.ui
 
 import android.app.Application
+import android.util.Base64
 import com.google.android.exoplayer2.ui.BuildConfig
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber

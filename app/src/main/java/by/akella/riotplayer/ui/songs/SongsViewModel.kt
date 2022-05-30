@@ -6,6 +6,10 @@ import by.akella.riotplayer.ui.base.BaseViewModel
 import by.akella.riotplayer.ui.base.model.SongUiModel
 import by.akella.riotplayer.ui.main.state.MusicType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
@@ -19,23 +23,20 @@ class SongsViewModel @Inject constructor(
     private val songsRepository: SongsRepository
 ) : BaseViewModel(dispatchersProvider), ContainerHost<SongsState, Nothing> {
 
+    val stateFlow = MutableStateFlow(SongsState())
+
     override val container: Container<SongsState, Nothing> = container(SongsState())
 
-    fun loadSongs(songType: MusicType? = null) = intent {
-        val songs = loadSongByType(songType).map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
-        reduce {
-            state.copy(
-                songType = songType,
-                loading = false,
-                songs = songs)
+    fun loadSongs(songType: MusicType? = null) = baseScope.launch {
+        val songs = withContext(Dispatchers.IO) {
+            loadSongByType(songType).map { SongUiModel(it.id, it.title, it.artist, it.albumArt) }
         }
+        stateFlow.value = SongsState(songType, false, songs)
     }
 
-    fun clearHistory() = intent {
+    fun clearHistory() = baseScope.launch {
         songsRepository.clearRecent()
-        reduce {
-            state.copy(songs = emptyList())
-        }
+        stateFlow.value = stateFlow.value.copy(songs = emptyList())
     }
 
     private suspend fun loadSongByType(songType: MusicType? = null) = when (songType) {

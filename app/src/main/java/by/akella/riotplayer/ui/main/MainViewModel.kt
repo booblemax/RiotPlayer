@@ -10,6 +10,7 @@ import by.akella.riotplayer.ui.main.state.MainSideEffect
 import by.akella.riotplayer.ui.main.state.MainState
 import by.akella.riotplayer.util.toSongUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.orbitmvi.orbit.Container
@@ -26,6 +27,8 @@ class MainViewModel @Inject constructor(
     private val scanner: SingleMediaScanner
 ) : BaseViewModel(dispatchersProvider), ContainerHost<MainState, MainSideEffect> {
 
+    val stateFlow = MutableStateFlow(MainState())
+
     override val container: Container<MainState, MainSideEffect> = container(MainState())
 
     init {
@@ -40,12 +43,8 @@ class MainViewModel @Inject constructor(
 
     private fun initNowPlayingSongListener() {
         riotMediaController.nowPlayingSong.onEach {
-            intent {
-                reduce {
-                    val event = it.toSongUiModel()
-                    state.copy(nowPlayingSong = event)
-                }
-            }
+            val event = it.toSongUiModel()
+            stateFlow.value = stateFlow.value.copy(nowPlayingSong = event)
         }.launchIn(baseScope)
     }
 
@@ -56,17 +55,13 @@ class MainViewModel @Inject constructor(
                 PlaybackStateCompat.STATE_ERROR -> false
                 else -> true
             }
-            intent {
-                 reduce { state.copy(playerDisplay = stateForDisplay) }
-            }
+            stateFlow.value = stateFlow.value.copy(playerDisplay = stateForDisplay)
         }.launchIn(baseScope)
     }
 
     private fun initConnectionListener() {
         riotMediaController.isConnectedToMediaBrowser.onEach {
-            intent {
-                reduce { state.copy(playerConnected = it) }
-            }
+            stateFlow.value = stateFlow.value.copy(playerConnected = it)
         }.launchIn(baseScope)
     }
 }

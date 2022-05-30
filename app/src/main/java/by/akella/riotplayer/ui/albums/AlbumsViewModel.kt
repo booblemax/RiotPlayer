@@ -5,6 +5,10 @@ import by.akella.riotplayer.repository.albums.AlbumRepository
 import by.akella.riotplayer.scanner.SingleMediaScanner
 import by.akella.riotplayer.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
@@ -18,16 +22,14 @@ class AlbumsViewModel @Inject constructor(
     private val albumsRepository: AlbumRepository
 ) : BaseViewModel(dispatcherProvider), ContainerHost<AlbumsState, Nothing> {
 
+    val stateFlow = MutableStateFlow(AlbumsState(loading = true))
+
     override val container: Container<AlbumsState, Nothing> = container(AlbumsState())
 
-    init {
-        load()
-    }
-
-    private fun load() = intent {
-        val albums = albumsRepository.getAlbums()
-        reduce {
-            state.copy(loading = false, albums = albums)
+    fun load() = baseScope.launch {
+        val albums = withContext(Dispatchers.IO) {
+            albumsRepository.getAlbums()
         }
+        stateFlow.value = AlbumsState(false, albums)
     }
 }

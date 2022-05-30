@@ -4,12 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.MaterialTheme
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import by.akella.riotplayer.databinding.CommonComposeLayoutBinding
 import by.akella.riotplayer.databinding.ItemsFragmentBinding
 import by.akella.riotplayer.repository.albums.AlbumModel
+import by.akella.riotplayer.ui.albums.compose.AlbumsScreen
 import by.akella.riotplayer.ui.base.BaseFragment
 import by.akella.riotplayer.ui.custom.SafeClickListener
 import by.akella.riotplayer.ui.main.MainFragmentDirections
@@ -30,24 +33,31 @@ class AlbumsFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = ItemsFragmentBinding.inflate(inflater, container, false)
-
-        return binding.root
+//        binding = ItemsFragmentBinding.inflate(inflater, container, false)
+//
+//        return binding.root
+        return CommonComposeLayoutBinding.inflate(inflater, container, false).apply {
+            composeLayout.setContent {
+                MaterialTheme {
+                    AlbumsScreen(onAlbumClick = { navigateToAlbumDetails(it) })
+                }
+            }
+        }.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        adapter = AlbumAdapter(SafeClickListener { it?.let { navigateToAlbumDetails(it) } })
-        with(binding) {
-            items.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
-            items.addItemDecoration(GridItemDecoration())
-            items.setHasFixedSize(true)
-            items.adapter = adapter
-        }
-
-        viewModel.container.collectState(
-            viewLifecycleOwner,
-            ::renderState
-        )
+//        adapter = AlbumAdapter(SafeClickListener { it?.let { navigateToAlbumDetails(it) } })
+//        with(binding) {
+//            items.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
+//            items.addItemDecoration(GridItemDecoration())
+//            items.setHasFixedSize(true)
+//            items.adapter = adapter
+//        }
+//
+//        viewModel.container.collectState(
+//            viewLifecycleOwner,
+//            ::renderState
+//        )
     }
 
     private fun renderState(state: AlbumsState) {
